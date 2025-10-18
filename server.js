@@ -5,6 +5,12 @@ const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Import routes and middleware
+const authRoutes = require('./routes/auth');
+const subscriptionRoutes = require('./routes/subscriptions');
+const { authenticateToken, requireSubscription } = require('./middleware/auth');
+const { checkQuota, incrementQuota, logMessage } = require('./utils/quota');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -33,9 +39,17 @@ const chatLimiter = rateLimit({
 
 // Middleware
 app.use(cors());
+
+// Stripe webhook needs raw body - must come before express.json()
+app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(express.static('.')); // Serve static files from current directory
 app.use('/api/', apiLimiter); // Apply rate limiting to all API endpoints
+
+// Mount routes
+app.use('/api/auth', authRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -79,10 +93,12 @@ async function searchForums(vehicleInfo, userQuestion) {
     }
 }
 
-// Chat endpoint
-app.post('/api/chat', chatLimiter, async (req, res) => {
+// Chat endpoint - now requires authentication and active subscription
+app.post('/api/chat', chatLimiter, authenticateToken, requireSubscription, async (req, res) => {
     try {
         const { message, conversationHistory = [] } = req.body;
+        const userId = req.user.id;
+        const subscription = req.subscription;
 
         // Validation
         if (!message) {
@@ -107,6 +123,20 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
         if (conversationHistory.length > 50) {
             return res.status(400).json({ error: 'Conversation history is too long. Please start a new conversation.' });
+        }
+
+        // Check message quota
+        const quotaCheck = await checkQuota(userId, subscription.plan_id);
+        if (!quotaCheck.allowed) {
+            return res.status(429).json({
+                error: 'Monthly message quota exceeded',
+                quota: {
+                    limit: quotaCheck.limit,
+                    used: quotaCheck.used,
+                    remaining: 0
+                },
+                needsUpgrade: true
+            });
         }
 
         // Build messages array for Claude
@@ -217,6 +247,17 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
         // Extract the response text
         const assistantMessage = response.content[0].text;
 
+        // Increment quota and log message (don't await to avoid blocking response)
+        incrementQuota(userId).catch(err => console.error('Error incrementing quota:', err));
+
+        // Calculate cost (Claude 3.5 Sonnet pricing: $3/MTok input, $15/MTok output)
+        const inputTokens = response.usage.input_tokens;
+        const outputTokens = response.usage.output_tokens;
+        const costGBP = ((inputTokens * 3 / 1000000) + (outputTokens * 15 / 1000000)) * 0.79; // Convert USD to GBP
+
+        logMessage(userId, message, assistantMessage, inputTokens, outputTokens, costGBP)
+            .catch(err => console.error('Error logging message:', err));
+
         res.json({
             response: assistantMessage,
             conversationHistory: [
@@ -225,7 +266,12 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
                     role: 'assistant',
                     content: assistantMessage
                 }
-            ]
+            ],
+            quota: {
+                remaining: quotaCheck.remaining - 1,
+                limit: quotaCheck.limit,
+                used: quotaCheck.used + 1
+            }
         });
 
     } catch (error) {

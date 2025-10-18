@@ -1,0 +1,39 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="192" height="192" rx="32" fill="#d32f2f"/>
+
+  <!-- Wrench -->
+  <g transform="translate(40, 40)">
+    <!-- Wrench head -->
+    <path d="M85 25 L95 35 L85 45 L75 35 Z" fill="#ffb300" stroke="#1a1a1a" stroke-width="2"/>
+    <circle cx="80" cy="35" r="8" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+
+    <!-- Wrench handle -->
+    <rect x="20" y="30" width="60" height="10" rx="5" fill="#ffb300" stroke="#1a1a1a" stroke-width="2"/>
+
+    <!-- Grip lines -->
+    <line x1="30" y1="30" x2="30" y2="40" stroke="#1a1a1a" stroke-width="1.5"/>
+    <line x1="40" y1="30" x2="40" y2="40" stroke="#1a1a1a" stroke-width="1.5"/>
+    <line x1="50" y1="30" x2="50" y2="40" stroke="#1a1a1a" stroke-width="1.5"/>
+    <line x1="60" y1="30" x2="60" y2="40" stroke="#1a1a1a" stroke-width="1.5"/>
+  </g>
+
+  <!-- Gear -->
+  <g transform="translate(95, 95)">
+    <circle cx="15" cy="15" r="20" fill="#ffb300"/>
+    <circle cx="15" cy="15" r="10" fill="#1a1a1a"/>
+
+    <!-- Gear teeth -->
+    <circle cx="15" cy="-5" r="3" fill="#ffb300"/>
+    <circle cx="15" cy="35" r="3" fill="#ffb300"/>
+    <circle cx="-5" cy="15" r="3" fill="#ffb300"/>
+    <circle cx="35" cy="15" r="3" fill="#ffb300"/>
+    <circle cx="29" cy="1" r="3" fill="#ffb300"/>
+    <circle cx="1" cy="1" r="3" fill="#ffb300"/>
+    <circle cx="29" cy="29" r="3" fill="#ffb300"/>
+    <circle cx="1" cy="29" r="3" fill="#ffb300"/>
+  </g>
+
+  <!-- Border accent -->
+  <rect x="4" y="4" width="184" height="184" rx="28" fill="none" stroke="#ffb300" stroke-width="3"/>
+</svg>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="description" content="My Mechanic - Your fast automotive Assistant for car repair, maintenance, and troubleshooting advice">
+    <meta name="theme-color" content="#d32f2f">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Mobile Web App Capable -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="My Mechanic">
+
+    <title>My Mechanic - Your AI Automotive Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="logo">
+                <svg class="logo-icon" width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4 L18 8 L14 12 L10 8 Z" fill="#ffb300" stroke="white" stroke-width="0.5"/>
+                    <circle cx="12" cy="8" r="2.5" fill="none" stroke="white" stroke-width="0.5"/>
+                    <rect x="3" y="6.5" width="10" height="3" rx="1.5" fill="#ffb300" stroke="white" stroke-width="0.5"/>
+                    <circle cx="22" cy="22" r="6" fill="#ffb300"/>
+                    <circle cx="22" cy="22" r="3" fill="white"/>
+                </svg>
+                <span class="logo-text">My Mechanic</span>
+            </div>
+            <div class="top-bar-actions">
+                <button id="install-android" class="download-btn hidden" title="Get it on Google Play">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 20.5V3.5C3 2.4 3.9 1.5 5 1.5H19C20.1 1.5 21 2.4 21 3.5V20.5C21 21.6 20.1 22.5 19 22.5H5C3.9 22.5 3 21.6 3 20.5Z" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M1 6H23M1 18H23" stroke="#3DDC84" stroke-width="1.5"/>
+                        <path d="M7.5 9L12 13.5L16.5 9" stroke="#3DDC84" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 13.5V9" stroke="#3DDC84" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <button id="install-apple" class="download-btn hidden" title="Download on the App Store">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.05 20.28C16.1 21.23 15.09 21.18 14.13 20.74C13.12 20.29 12.19 20.27 11.12 20.74C9.75 21.35 9.04 21.27 8.21 20.28C3.45 15.25 4.14 7.53 9.57 7.26C10.86 7.33 11.76 7.99 12.52 8.04C13.71 7.81 14.85 7.13 16.13 7.22C17.66 7.34 18.81 7.95 19.55 9.07C16.49 10.94 17.21 15.2 20 16.39C19.43 17.88 18.67 19.36 17.04 20.29L17.05 20.28ZM12.43 7.21C12.3 5.02 14.08 3.25 16.12 3C16.42 5.56 13.94 7.43 12.43 7.21Z" fill="white"/>
+                    </svg>
+                </button>
+                <button id="export-chat" class="icon-btn" title="Export conversation">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2 L10 13 M10 13 L6 9 M10 13 L14 9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M4 15 L4 17 L16 17 L16 15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <button id="clear-chat" class="icon-btn" title="Clear conversation">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4 L16 16 M16 4 L4 16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-wrapper">
+            <div id="chat-messages" class="chat-messages">
+                <!-- Vehicle Selector Section -->
+                <div class="vehicle-selector-section">
+                    <h2 class="selector-title">Select Your Vehicle</h2>
+                    <p class="selector-subtitle">Select your details and ask me a question</p>
+                    <div class="car-selector">
+                        <select id="car-year" class="car-select">
+                            <option value="">Year</option>
+                        </select>
+                        <select id="car-make" class="car-select">
+                            <option value="">Make</option>
+                        </select>
+                        <select id="car-model" class="car-select">
+                            <option value="">Model</option>
+                        </select>
+                        <select id="engine-type" class="car-select">
+                            <option value="">Engine Type</option>
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                            <option value="Electric">Electric</option>
+                        </select>
+                        <select id="engine-size" class="car-select">
+                            <option value="">Engine Size</option>
+                            <option value="1.0L">1.0L</option>
+                            <option value="1.2L">1.2L</option>
+                            <option value="1.4L">1.4L</option>
+                            <option value="1.5L">1.5L</option>
+                            <option value="1.6L">1.6L</option>
+                            <option value="1.8L">1.8L</option>
+                            <option value="2.0L">2.0L</option>
+                            <option value="2.2L">2.2L</option>
+                            <option value="2.4L">2.4L</option>
+                            <option value="2.5L">2.5L</option>
+                            <option value="2.7L">2.7L</option>
+                            <option value="3.0L">3.0L</option>
+                            <option value="3.5L">3.5L</option>
+                            <option value="3.6L">3.6L</option>
+                            <option value="4.0L">4.0L</option>
+                            <option value="4.6L">4.6L</option>
+                            <option value="5.0L">5.0L</option>
+                            <option value="5.3L">5.3L</option>
+                            <option value="5.7L">5.7L</option>
+                            <option value="6.2L">6.2L</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Welcome Message -->
+                <div class="welcome-section">
+                    <div class="welcome-icon">
+                        <svg width="36" height="36" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="28" cy="28" r="26" fill="rgba(211, 47, 47, 0.2)" stroke="#d32f2f" stroke-width="2"/>
+                            <path d="M22 18 L30 26 L22 34 L14 26 Z" fill="#ffb300" stroke="#d32f2f" stroke-width="1.5"/>
+                            <circle cx="18" cy="26" r="4" fill="none" stroke="#d32f2f" stroke-width="1.5"/>
+                            <rect x="6" y="23" width="14" height="6" rx="3" fill="#ffb300" stroke="#d32f2f" stroke-width="1.5"/>
+                            <circle cx="38" cy="38" r="10" fill="#ffb300"/>
+                            <circle cx="38" cy="38" r="5" fill="#d32f2f"/>
+                        </svg>
+                    </div>
+                    <h1 class="welcome-title">Welcome to My Mechanic</h1>
+                    <p class="welcome-subtitle">Your fast automotive Assistant</p>
+
+                    <div class="suggestions">
+                        <button class="suggestion-card" data-prompt="My engine management light is on, what should I do?">
+                            <span class="suggestion-icon">⚠️</span>
+                            <div class="suggestion-text">Engine Management Light</div>
+                        </button>
+                        <button class="suggestion-card" data-prompt="How often should I service my car?">
+                            <span class="suggestion-icon">🔧</span>
+                            <div class="suggestion-text">Service Schedule</div>
+                        </button>
+                        <button class="suggestion-card" data-prompt="My car won't start, help me troubleshoot">
+                            <span class="suggestion-icon">🔋</span>
+                            <div class="suggestion-text">Car Won't Start</div>
+                        </button>
+                        <button class="suggestion-card" data-prompt="How do I service my car?">
+                            <span class="suggestion-icon">🛠️</span>
+                            <div class="suggestion-text">How to Service My Car</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-wrapper">
+                <!-- Loading Indicator (in bottom bar) -->
+                <div id="loading" class="loading-indicator hidden">
+                    <div class="loading-content">
+                        <div class="car-animation">
+                            <img src="loading-car.gif" alt="Loading..." class="car-icon gif-loading">
+                            <div class="road-line"></div>
+                        </div>
+                        <div class="loading-text">Getting an answer...</div>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <textarea
+                        id="user-input"
+                        placeholder="Ask me anything about your car..."
+                        rows="1"
+                    ></textarea>
+                    <button id="send-btn" class="send-btn" disabled>
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 10 L18 10 M18 10 L12 4 M18 10 L12 16" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="input-hint">My Mechanic can make mistakes. Always verify important information.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

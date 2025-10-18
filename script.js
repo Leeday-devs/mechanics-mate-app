@@ -92,6 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('API URL:', API_URL);
     console.log('Running as PWA:', isPWA());
 
+    // Check authentication
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        window.location.href = '/login.html';
+        return;
+    }
+
     // Elements
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
@@ -449,11 +456,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-            // Send to API (with car context)
+            // Get auth token
+            const token = localStorage.getItem('authToken');
+
+            // Send to API (with car context and auth)
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     message: fullMessage,
@@ -508,8 +519,25 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (error.message.includes('Too many requests') || error.message.includes('rate limit')) {
                 errorMessage += 'Too many requests. Please wait a moment before trying again.';
                 canRetry = true;
-            } else if (error.message.includes('401') || error.message.includes('403')) {
-                errorMessage += 'Authentication error. Please check your API key in the .env file.';
+            } else if (error.message.includes('quota exceeded')) {
+                errorMessage = 'Monthly message quota exceeded! Please upgrade your plan or wait until next month.';
+                errorMessage += '\n\nClick here to view pricing plans.';
+                setTimeout(() => {
+                    if (confirm('Monthly message quota exceeded!\n\nWould you like to upgrade your plan?')) {
+                        window.location.href = '/pricing.html';
+                    }
+                }, 1000);
+            } else if (error.message.includes('401') || error.message.includes('403') || error.message.includes('token')) {
+                errorMessage = 'Your session has expired. Please log in again.';
+                setTimeout(() => {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login.html';
+                }, 2000);
+            } else if (error.message.includes('subscription required')) {
+                errorMessage = 'Active subscription required. Please subscribe to continue.';
+                setTimeout(() => {
+                    window.location.href = '/pricing.html';
+                }, 2000);
             } else if (error.message.includes('503')) {
                 errorMessage += 'The service is temporarily unavailable. Please try again in a moment.';
                 canRetry = true;

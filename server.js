@@ -8,6 +8,7 @@ require('dotenv').config();
 // Import routes and middleware
 const authRoutes = require('./routes/auth');
 const subscriptionRoutes = require('./routes/subscriptions');
+const adminRoutes = require('./routes/admin');
 const { authenticateToken, requireSubscription } = require('./middleware/auth');
 const { checkQuota, incrementQuota, logMessage } = require('./utils/quota');
 
@@ -50,6 +51,7 @@ app.use('/api/', apiLimiter); // Apply rate limiting to all API endpoints
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({

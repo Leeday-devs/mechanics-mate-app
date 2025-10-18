@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - My Mechanic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/icon-512.svg">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .pricing-card.popular {
+            border: 3px solid #667eea;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .plan-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .plan-price {
+            font-size: 48px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .plan-price span {
+            font-size: 20px;
+            color: #666;
+            font-weight: normal;
+        }
+
+        .plan-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .plan-features li {
+            padding: 12px 0;
+            color: #555;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .plan-features li:before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .select-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .select-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .select-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .back-link a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 36px;
+            }
+
+            .header p {
+                font-size: 18px;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Choose Your Plan</h1>
+            <p>Get expert automotive advice powered by AI</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div class="pricing-grid">
+            <!-- Starter Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Starter</div>
+                <div class="plan-price">£4.99<span>/month</span></div>
+                <div class="plan-description">Perfect for casual car owners</div>
+                <ul class="plan-features">
+                    <li>50 messages per month</li>
+                    <li>AI-powered automotive advice</li>
+                    <li>Vehicle-specific guidance</li>
+                    <li>UK MOT requirements</li>
+                    <li>Safety recommendations</li>
+                </ul>
+                <button class="select-btn" data-plan="starter">Select Starter</button>
+            </div>
+
+            <!-- Professional Plan -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">Most Popular</div>
+                <div class="plan-name">Professional</div>
+                <div class="plan-price">£14.99<span>/month</span></div>
+                <div class="plan-description">For regular DIY mechanics</div>
+                <ul class="plan-features">
+                    <li>200 messages per month</li>
+                    <li>AI-powered automotive advice</li>
+                    <li>Vehicle-specific guidance</li>
+                    <li>UK MOT requirements</li>
+                    <li>Safety recommendations</li>
+                    <li>Priority support</li>
+                </ul>
+                <button class="select-btn" data-plan="professional">Select Professional</button>
+            </div>
+
+            <!-- Workshop Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Workshop</div>
+                <div class="plan-price">£39.99<span>/month</span></div>
+                <div class="plan-description">For professional garages</div>
+                <ul class="plan-features">
+                    <li>Unlimited messages</li>
+                    <li>AI-powered automotive advice</li>
+                    <li>Vehicle-specific guidance</li>
+                    <li>UK MOT requirements</li>
+                    <li>Safety recommendations</li>
+                    <li>Priority support</li>
+                    <li>Multi-user access</li>
+                </ul>
+                <button class="select-btn" data-plan="workshop">Select Workshop</button>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="/login.html">← Back to Login</a>
+        </div>
+    </div>
+
+    <script>
+        const selectButtons = document.querySelectorAll('.select-btn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            setTimeout(() => errorMessage.classList.remove('show'), 5000);
+        }
+
+        selectButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                const planId = this.dataset.plan;
+                const token = localStorage.getItem('authToken');
+
+                if (!token) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                // Disable button and show loading
+                this.disabled = true;
+                const originalText = this.textContent;
+                this.innerHTML = '<span class="loading"></span>Loading...';
+
+                try {
+                    const response = await fetch('/api/subscriptions/create-checkout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ planId })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Redirect to Stripe Checkout
+                        window.location.href = data.url;
+                    } else {
+                        showError(data.error || 'Failed to create checkout session');
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    }
+                } catch (error) {
+                    console.error('Checkout error:', error);
+                    showError('Network error. Please try again.');
+                    this.disabled = false;
+                    this.textContent = originalText;
+                }
+            });
+        });
+
+        // Check if coming from successful payment
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            setTimeout(() => {
+                window.location.href = '/dashboard.html';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

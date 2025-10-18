@@ -1079,3 +1079,179 @@ body {
         page-break-inside: avoid;
     }
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablets and smaller */
+@media (max-width: 768px) {
+    .top-bar {
+        padding: 0.75rem 1rem;
+    }
+
+    .logo-text {
+        font-size: 1rem;
+    }
+
+    .top-bar-actions {
+        gap: 0.5rem;
+    }
+
+    .dashboard-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .welcome-section h1 {
+        font-size: 2rem;
+    }
+
+    .welcome-section p {
+        font-size: 1rem;
+    }
+
+    .vehicle-selector {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .vehicle-selector select {
+        font-size: 0.9rem;
+    }
+
+    .clear-vehicle-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    .app-container {
+        padding: 0;
+    }
+
+    .top-bar {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0;
+    }
+
+    .logo {
+        gap: 0.4rem;
+    }
+
+    .logo-icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .logo-text {
+        font-size: 0.9rem;
+    }
+
+    .dashboard-btn,
+    .logout-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+    }
+
+    .welcome-section {
+        padding: 1.5rem 1rem;
+    }
+
+    .welcome-section h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-section p {
+        font-size: 0.9rem;
+    }
+
+    .vehicle-selector {
+        padding: 1rem;
+        gap: 0.6rem;
+    }
+
+    .vehicle-selector label {
+        font-size: 0.8rem;
+    }
+
+    .vehicle-selector select {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .clear-vehicle-btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .chat-messages {
+        padding: 0.75rem;
+    }
+
+    .message {
+        margin-bottom: 0.75rem;
+    }
+
+    .message-content {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        max-width: 85%;
+    }
+
+    .message-content p {
+        margin-bottom: 0.5rem;
+    }
+
+    .message-time {
+        font-size: 0.7rem;
+        margin-top: 0.3rem;
+    }
+
+    .input-wrapper {
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    #userInput {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        min-height: 44px; /* iOS recommended touch target */
+    }
+
+    .send-btn {
+        padding: 0.75rem;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .send-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .loading-indicator {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    /* Improve touch targets */
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    select {
+        min-height: 44px;
+    }
+
+    /* Prevent zoom on input focus (iOS) */
+    input[type="text"],
+    textarea,
+    select {
+        font-size: 16px !important; /* iOS won't zoom if >= 16px */
+    }
+}

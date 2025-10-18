@@ -1,13 +1,28 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const rateLimit = require('express-rate-limit');
 const { supabase, supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Rate limiter for authentication endpoints - prevent brute force attacks
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: {
+        error: 'Too many authentication attempts. Please try again in 15 minutes.',
+        retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    // Skip rate limiting for successful requests (only count failures)
+    skipSuccessfulRequests: true
+});
+
 // Sign up with email/password
-router.post('/signup', async (req, res) => {
+router.post('/signup', authLimiter, async (req, res) => {
     try {
         const { email, password, name } = req.body;
 
@@ -55,7 +70,7 @@ router.post('/signup', async (req, res) => {
 });
 
 // Login with email/password
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
 

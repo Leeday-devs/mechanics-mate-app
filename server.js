@@ -3,7 +3,52 @@ const Anthropic = require('@anthropic-ai/sdk');
 const cors = require('cors');
 const axios = require('axios');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 require('dotenv').config();
+
+// ============================================
+// ENVIRONMENT VALIDATION
+// ============================================
+const requiredEnvVars = [
+    'ANTHROPIC_API_KEY',
+    'SUPABASE_URL',
+    'SUPABASE_ANON_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
+    'STRIPE_SECRET_KEY',
+    'STRIPE_PUBLISHABLE_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'JWT_SECRET'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+    console.error('❌ CRITICAL: Missing required environment variables:');
+    missingVars.forEach(varName => console.error(`   - ${varName}`));
+    console.error('\nPlease check your .env file and ensure all required variables are set.');
+    process.exit(1);
+}
+
+// Warn if using live Stripe keys in development
+if (process.env.NODE_ENV !== 'production' && process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')) {
+    console.warn('⚠️  WARNING: Using LIVE Stripe keys in development environment!');
+    console.warn('   This can result in real charges. Use test keys (sk_test_...) for development.');
+}
+
+// Check for duplicate price IDs
+const priceIds = [
+    process.env.STRIPE_PRICE_STARTER,
+    process.env.STRIPE_PRICE_PROFESSIONAL,
+    process.env.STRIPE_PRICE_WORKSHOP
+];
+const uniquePriceIds = new Set(priceIds);
+if (uniquePriceIds.size !== priceIds.length) {
+    console.warn('⚠️  WARNING: Duplicate Stripe price IDs detected!');
+    console.warn('   STARTER:', process.env.STRIPE_PRICE_STARTER);
+    console.warn('   PROFESSIONAL:', process.env.STRIPE_PRICE_PROFESSIONAL);
+    console.warn('   WORKSHOP:', process.env.STRIPE_PRICE_WORKSHOP);
+}
+
+console.log('✅ Environment validation passed');
 
 // Import routes and middleware
 const authRoutes = require('./routes/auth');
@@ -38,8 +83,39 @@ const chatLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Middleware
-app.use(cors());
+// CORS Configuration - Secure by default
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+// Security headers with Helmet
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            scriptSrc: ["'self'", "'unsafe-inline'"], // Required for inline scripts
+            connectSrc: ["'self'", "https://api.anthropic.com", "https://*.supabase.co", "https://api.stripe.com"]
+        }
+    }
+}));
+
+app.use(cors({
+    origin: function(origin, callback) {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+            callback(null, true);
+        } else {
+            console.warn('⚠️  CORS blocked request from:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 
 // Stripe webhook needs raw body - must come before express.json()
 app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));

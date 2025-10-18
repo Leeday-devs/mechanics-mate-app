@@ -66,8 +66,8 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
                 }
             ],
             mode: 'subscription',
-            success_url: `${req.headers.origin || 'http://localhost:3000'}/dashboard?success=true`,
-            cancel_url: `${req.headers.origin || 'http://localhost:3000'}/pricing?canceled=true`,
+            success_url: `${req.headers.origin || 'http://localhost:3000'}/dashboard.html?success=true`,
+            cancel_url: `${req.headers.origin || 'http://localhost:3000'}/pricing.html?canceled=true`,
             metadata: {
                 user_id: userId,
                 plan_id: planId
@@ -103,7 +103,7 @@ router.post('/create-portal', authenticateToken, async (req, res) => {
         // Create portal session
         const session = await stripe.billingPortal.sessions.create({
             customer: subscription.stripe_customer_id,
-            return_url: `${req.headers.origin || 'http://localhost:3000'}/dashboard`
+            return_url: `${req.headers.origin || 'http://localhost:3000'}/dashboard.html`
         });
 
         res.json({ url: session.url });

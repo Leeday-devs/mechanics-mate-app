@@ -385,7 +385,13 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'My Mechanic API is running' });
 });
 
-app.listen(PORT, () => {
-    console.log(`My Mechanic server running on http://localhost:${PORT}`);
-    console.log(`API endpoint: http://localhost:${PORT}/api/chat`);
-});
+// Export app for Netlify Functions, or start server locally
+if (process.env.NETLIFY || process.env.CONTEXT === 'production') {
+    module.exports = app;
+    module.exports.handler = require('serverless-http')(app);
+} else {
+    app.listen(PORT, () => {
+        console.log(`My Mechanic server running on http://localhost:${PORT}`);
+        console.log(`API endpoint: http://localhost:${PORT}/api/chat`);
+    });
+}

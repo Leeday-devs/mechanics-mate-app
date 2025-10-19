@@ -51,6 +51,16 @@ body {
     flex-shrink: 0;
 }
 
+.logo-link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.logo-link:hover {
+    opacity: 0.8;
+}
+
 .logo {
     display: flex;
     align-items: center;

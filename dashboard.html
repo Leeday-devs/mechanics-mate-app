@@ -401,13 +401,17 @@
             workshop: -1
         };
 
-        async function loadDashboard() {
+        async function loadDashboard(retryCount = 0) {
             const token = localStorage.getItem('authToken');
 
             if (!token) {
                 window.location.href = '/login.html';
                 return;
             }
+
+            // Check if coming from successful payment
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromPayment = urlParams.get('success') === 'true';
 
             loadingOverlay.classList.add('show');
 
@@ -436,6 +440,12 @@
 
                 // Check subscription
                 if (!data.subscription || data.subscription.status !== 'active') {
+                    // If coming from payment and subscription not active yet, wait for webhook
+                    if (fromPayment && retryCount < 10) {
+                        console.log('Waiting for subscription to be activated... Retry', retryCount + 1);
+                        setTimeout(() => loadDashboard(retryCount + 1), 2000); // Retry after 2 seconds
+                        return;
+                    }
                     window.location.href = '/pricing.html';
                     return;
                 }

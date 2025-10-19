@@ -121,13 +121,32 @@ app.use(cors({
 app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
-app.use(express.static('.')); // Serve static files from current directory
 app.use('/api/', apiLimiter); // Apply rate limiting to all API endpoints
 
-// Mount routes
+// HTML Page Routes - MUST be defined BEFORE static middleware
+const path = require('path');
+
+// Landing page at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'landing.html'));
+});
+
+// Chat interface (previously index.html)
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/app', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Serve static files AFTER route handlers to prevent index.html from overriding root
+app.use(express.static('.', { index: false })); // Disable auto-serving index.html
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({

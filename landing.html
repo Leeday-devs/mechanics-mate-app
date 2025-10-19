@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your AI Mechanic, Available 24/7. Get instant, vehicle-specific automotive advice powered by Claude AI. UK-focused support for 31 car manufacturers.">
+    <meta name="theme-color" content="#d32f2f">
+    <title>My Mechanic - Your AI Automotive Assistant</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="icon-512.svg">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2b2b2b 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav {
+            background: rgba(26, 26, 26, 0.95);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid #d32f2f;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+
+        .nav-logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #b0b0b0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffb300;
+        }
+
+        .nav-cta {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(211, 47, 47, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #ffb300;
+            border: 2px solid #ffb300;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 179, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 24px;
+            color: #b0b0b0;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .trust-badges {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .badge svg {
+            width: 20px;
+            height: 20px;
+            fill: #ffb300;
+        }
+
+        /* Problem/Solution Section */
+        .section {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 20px;
+            color: #888;
+            margin-bottom: 60px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .problem-solution {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .problem-card, .solution-card {
+            background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .problem-card {
+            border: 2px solid #c62828;
+        }
+
+        .solution-card {
+            border: 2px solid #ffb300;
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        .card-list {
+            list-style: none;
+        }
+
+        .card-list li {
+            padding: 12px 0;
+            color: #b0b0b0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .card-list li:before {
+            content: "✗";
+            color: #c62828;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .solution-card .card-list li:before {
+            content: "✓";
+            color: #ffb300;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #d32f2f;
+            box-shadow: 0 10px 30px rgba(211, 47, 47, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #e0e0e0;
+        }
+
+        .feature-desc {
+            color: #888;
+            font-size: 15px;
+        }
+
+        /* How It Works */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 20px;
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #e0e0e0;
+        }
+
+        .step-desc {
+            color: #888;
+            font-size: 15px;
+        }
+
+        /* Pricing Preview */
+        .pricing-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+            position: relative;
+            text-align: center;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(211, 47, 47, 0.4);
+            border-color: #d32f2f;
+        }
+
+        .pricing-card.popular {
+            border: 3px solid #d32f2f;
+            border-top: 4px solid #ffb300;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.5);
+        }
+
+        .plan-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 10px;
+        }
+
+        .plan-price {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .plan-price span {
+            font-size: 20px;
+            color: #888;
+            font-weight: normal;
+        }
+
+        .plan-description {
+            color: #b0b0b0;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .plan-features li {
+            padding: 12px 0;
+            color: #e0e0e0;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .plan-features li:before {
+            content: "✓";
+            color: #ffb300;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* FAQ Section */
+        .faq-container {
+            max-width: 800px;
+            margin: 60px auto 0;
+        }
+
+        .faq-item {
+            background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            border-color: #d32f2f;
+        }
+
+        .faq-question {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 15px;
+        }
+
+        .faq-answer {
+            color: #888;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+            padding: 80px 20px;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .cta-section h2 {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-white {
+            background: white;
+            color: #d32f2f;
+            font-weight: 700;
+        }
+
+        .btn-white:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-outline-white {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline-white:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            padding: 40px 20px;
+            border-top: 2px solid #d32f2f;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 15px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #ffb300;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            padding-top: 30px;
+            border-top: 1px solid #333;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            /* Compact Navigation */
+            .nav {
+                padding: 12px 0;
+            }
+
+            .nav-container {
+                padding: 0 15px;
+            }
+
+            .nav-logo {
+                font-size: 18px;
+                gap: 8px;
+            }
+
+            .nav-logo svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .nav-cta {
+                gap: 8px;
+            }
+
+            .nav-cta .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+
+            /* Hero Section */
+            .hero {
+                padding: 60px 20px;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+            }
+
+            .section-title {
+                font-size: 36px;
+            }
+
+            .cta-section h2 {
+                font-size: 36px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* Extra Compact Navigation for Small Phones */
+            .nav {
+                padding: 10px 0;
+            }
+
+            .nav-logo {
+                font-size: 16px;
+                gap: 6px;
+            }
+
+            .nav-logo svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .nav-cta {
+                flex-direction: row;
+                gap: 6px;
+            }
+
+            .nav-cta .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+
+            /* Hero Section */
+            .hero {
+                padding: 40px 20px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            /* Trust Badges */
+            .trust-badges {
+                gap: 15px;
+            }
+
+            .badge {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4 L18 8 L14 12 L10 8 Z" fill="#ffb300" stroke="white" stroke-width="0.5"/>
+                    <circle cx="12" cy="8" r="2.5" fill="none" stroke="white" stroke-width="0.5"/>
+                    <rect x="3" y="6.5" width="10" height="3" rx="1.5" fill="#ffb300" stroke="white" stroke-width="0.5"/>
+                    <circle cx="22" cy="22" r="6" fill="#ffb300"/>
+                    <circle cx="22" cy="22" r="3" fill="white"/>
+                </svg>
+                My Mechanic
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#faq">FAQ</a>
+            </div>
+            <div class="nav-cta">
+                <a href="/login.html" class="btn btn-secondary">Login</a>
+                <a href="/signup.html" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Your AI Mechanic, Available 24/7</h1>
+        <p>Get instant, vehicle-specific automotive advice powered by Claude AI. UK-focused support for 31 car manufacturers.</p>
+        <div class="hero-cta">
+            <a href="/signup.html" class="btn btn-primary">Start Now</a>
+            <a href="#pricing" class="btn btn-secondary">View Pricing</a>
+        </div>
+        <div class="trust-badges">
+            <div class="badge">
+                <svg viewBox="0 0 20 20"><path d="M10 2L2 7v6c0 5.5 3.8 8.7 8 10 4.2-1.3 8-4.5 8-10V7l-8-5z" fill="currentColor"/></svg>
+                UK-Focused
+            </div>
+            <div class="badge">
+                <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="currentColor"/></svg>
+                Claude AI Powered
+            </div>
+            <div class="badge">
+                <svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="14" rx="2" fill="currentColor"/></svg>
+                PWA Enabled
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem/Solution Section -->
+    <section class="section">
+        <h2 class="section-title">Why My Mechanic?</h2>
+        <p class="section-subtitle">Common car problems meet instant AI solutions</p>
+
+        <div class="problem-solution">
+            <div class="problem-card">
+                <div class="card-icon">😰</div>
+                <h3 class="card-title">Common Problems</h3>
+                <ul class="card-list">
+                    <li>Expensive mechanic callouts for simple questions</li>
+                    <li>Long wait times for appointments</li>
+                    <li>Uncertainty about what's wrong with your car</li>
+                    <li>Generic advice that doesn't fit your vehicle</li>
+                </ul>
+            </div>
+
+            <div class="solution-card">
+                <div class="card-icon">🎉</div>
+                <h3 class="card-title">Our Solution</h3>
+                <ul class="card-list">
+                    <li>Instant AI responses 24/7, no appointments needed</li>
+                    <li>Get answers in seconds, not days</li>
+                    <li>Clear, step-by-step diagnostic guidance</li>
+                    <li>Vehicle-specific advice for your exact make & model</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <h2 class="section-title">Powerful Features</h2>
+        <p class="section-subtitle">Everything you need for automotive advice, powered by AI</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI-Powered Diagnostics</h3>
+                <p class="feature-desc">Powered by Claude 3.5 Sonnet, the latest AI from Anthropic, trained on comprehensive automotive knowledge.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🚗</div>
+                <h3 class="feature-title">Vehicle-Specific Advice</h3>
+                <p class="feature-desc">Select your exact year, make, model, and engine type. Get tailored advice for your specific vehicle.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🇬🇧</div>
+                <h3 class="feature-title">UK Market Focused</h3>
+                <p class="feature-desc">31 European & UK manufacturers including Vauxhall, Ford, BMW, Mercedes, Audi, and more.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3 class="feature-title">Works Offline</h3>
+                <p class="feature-desc">Progressive Web App with service worker caching. Install on any device and access previously loaded content offline.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3 class="feature-title">Conversation History</h3>
+                <p class="feature-desc">Auto-saves your conversations for 24 hours. Pick up where you left off anytime.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3 class="feature-title">Export Chats</h3>
+                <p class="feature-desc">Download your conversations as TXT or JSON files for your records or to share with your mechanic.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3 class="feature-title">Secure & Private</h3>
+                <p class="feature-desc">Supabase authentication, encrypted connections, and security headers protect your data.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📲</div>
+                <h3 class="feature-title">Mobile Optimized</h3>
+                <p class="feature-desc">Mobile-first design with touch-friendly controls. Install as an app on any device.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="section" id="how-it-works">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Get started in minutes, not hours</p>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Sign Up</h3>
+                <p class="step-desc">Create your account with secure authentication in seconds.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Select Your Vehicle</h3>
+                <p class="step-desc">Choose your car's year, make, model, and engine details.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Ask Anything</h3>
+                <p class="step-desc">Get instant AI-powered automotive advice tailored to your vehicle.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Save & Export</h3>
+                <p class="step-desc">Conversations auto-save and can be exported for your records.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="section" id="pricing">
+        <h2 class="section-title">Simple, Transparent Pricing</h2>
+        <p class="section-subtitle">Choose the plan that fits your needs</p>
+
+        <div class="pricing-preview">
+            <!-- Starter Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Starter</div>
+                <div class="plan-price">£4.99<span>/month</span></div>
+                <div class="plan-description">Perfect for casual car owners</div>
+                <ul class="plan-features">
+                    <li>50 messages per month</li>
+                    <li>AI-powered automotive advice</li>
+                    <li>Vehicle-specific guidance</li>
+                    <li>Conversation export</li>
+                    <li>PWA mobile app</li>
+                </ul>
+                <a href="/signup.html" class="btn btn-primary" style="width: 100%; text-align: center;">Get Started</a>
+            </div>
+
+            <!-- Professional Plan -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">Most Popular</div>
+                <div class="plan-name">Professional</div>
+                <div class="plan-price">£14.99<span>/month</span></div>
+                <div class="plan-description">For regular DIY mechanics</div>
+                <ul class="plan-features">
+                    <li>200 messages per month</li>
+                    <li>AI-powered automotive advice</li>
+                    <li>Vehicle-specific guidance</li>
+                    <li>Conversation export</li>
+                    <li>PWA mobile app</li>
+                    <li>Priority support</li>
+                </ul>
+                <a href="/signup.html" class="btn btn-primary" style="width: 100%; text-align: center;">Get Started</a>
+            </div>
+
+            <!-- Workshop Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Workshop</div>
+                <div class="plan-price">£39.99<span>/month</span></div>
+                <div class="plan-description">For professional garages</div>
+                <ul class="plan-features">
+                    <li>Unlimited messages</li>
+                    <li>AI-powered automotive advice</li>
+                    <li>Vehicle-specific guidance</li>
+                    <li>Conversation export</li>
+                    <li>PWA mobile app</li>
+                    <li>Priority support</li>
+                    <li>Workshop team access</li>
+                </ul>
+                <a href="/signup.html" class="btn btn-primary" style="width: 100%; text-align: center;">Get Started</a>
+            </div>
+        </div>
+
+        <p style="text-align: center; color: #888; margin-top: 40px;">
+            All plans include secure authentication • Cancel anytime • UK prices include VAT
+        </p>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section" id="faq">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Everything you need to know</p>
+
+        <div class="faq-container">
+            <div class="faq-item">
+                <h3 class="faq-question">What vehicles are supported?</h3>
+                <p class="faq-answer">We support 31 UK and European car manufacturers including Vauxhall, Ford, BMW, Mercedes-Benz, Audi, Volkswagen, Toyota, Honda, and many more. Our database includes models from 2000 onwards with comprehensive engine type and size options.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">How does the AI work?</h3>
+                <p class="faq-answer">My Mechanic is powered by Claude 3.5 Sonnet from Anthropic, one of the most advanced AI models available. It's trained on comprehensive automotive knowledge and provides vehicle-specific advice based on your exact make, model, and year.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Can I use it offline?</h3>
+                <p class="faq-answer">Yes! My Mechanic is a Progressive Web App (PWA) with offline support. You can install it on any device and access previously loaded content even without an internet connection. New questions require an internet connection to get AI responses.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">What happens if I run out of messages?</h3>
+                <p class="faq-answer">If you reach your monthly message limit, you'll need to either upgrade to a higher plan or wait until your quota resets at the start of the next billing cycle. The Workshop plan offers unlimited messages.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Is my data secure?</h3>
+                <p class="faq-answer">Absolutely. We use Supabase authentication with JWT tokens, encrypted HTTPS connections, Helmet security headers, and CORS protection. Your conversations are stored securely and you can export or delete them at any time.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Can I cancel anytime?</h3>
+                <p class="faq-answer">Yes, you can cancel your subscription at any time through your dashboard. There are no long-term contracts or cancellation fees.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2>Ready to Get Started?</h2>
+        <p>Join thousands of car owners getting instant AI-powered automotive advice</p>
+        <div class="cta-buttons">
+            <a href="/signup.html" class="btn btn-white">Create Account</a>
+            <a href="/login.html" class="btn btn-outline-white">Already Have Account?</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>My Mechanic</h3>
+                <ul class="footer-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Account</h3>
+                <ul class="footer-links">
+                    <li><a href="/signup.html">Sign Up</a></li>
+                    <li><a href="/login.html">Login</a></li>
+                    <li><a href="/dashboard.html">Dashboard</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="/privacy.html">Privacy Policy</a></li>
+                    <li><a href="/terms.html">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul class="footer-links">
+                    <li><a href="mailto:support@mymechanic.ai">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 My Mechanic. All rights reserved. Powered by Claude AI from Anthropic.</p>
+        </div>
+    </footer>
+</body>
+</html>

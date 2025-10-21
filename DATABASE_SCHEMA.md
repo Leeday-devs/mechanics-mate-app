@@ -244,15 +244,18 @@ CREATE INDEX IF NOT EXISTS idx_message_history_created_at ON public.message_hist
 CREATE INDEX IF NOT EXISTS idx_admin_users_user_id ON public.admin_users(user_id);
 
 -- ============================================
--- UPDATED_AT TRIGGER FUNCTION
+-- UPDATED_AT TRIGGER FUNCTION (SECURE)
 -- ============================================
+-- Security: SET search_path prevents privilege escalation attacks
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = ''
+AS $$
 BEGIN
     NEW.updated_at = now();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Apply trigger to subscriptions table
 DROP TRIGGER IF EXISTS update_subscriptions_updated_at ON public.subscriptions;

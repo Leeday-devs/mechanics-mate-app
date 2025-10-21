@@ -40,12 +40,12 @@ async function requireSubscription(req, res, next) {
     try {
         const userId = req.user.id;
 
-        // Get user's subscription
+        // Get user's subscription (accept active, trialing, or incomplete)
         const { data: subscription, error } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
             .eq('user_id', userId)
-            .eq('status', 'active')
+            .in('status', ['active', 'trialing', 'incomplete'])
             .single();
 
         if (error || !subscription) {

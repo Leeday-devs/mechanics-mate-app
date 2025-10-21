@@ -96,12 +96,12 @@ router.post('/login', authLimiter, async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        // Get subscription status
+        // Get subscription status (accept active, trialing, or incomplete)
         const { data: subscription } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
             .eq('user_id', authData.user.id)
-            .eq('status', 'active')
+            .in('status', ['active', 'trialing', 'incomplete'])
             .single();
 
         res.json({
@@ -126,12 +126,12 @@ router.get('/me', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // Get subscription
+        // Get subscription (accept active, trialing, or incomplete statuses)
         const { data: subscription } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
             .eq('user_id', userId)
-            .eq('status', 'active')
+            .in('status', ['active', 'trialing', 'incomplete'])
             .single();
 
         // Get usage stats

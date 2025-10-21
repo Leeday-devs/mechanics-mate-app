@@ -438,15 +438,20 @@
                     adminBtn.style.display = 'block';
                 }
 
-                // Check subscription
-                if (!data.subscription || data.subscription.status !== 'active') {
-                    // If coming from payment and subscription not active yet, wait for webhook
-                    if (fromPayment && retryCount < 10) {
-                        console.log('Waiting for subscription to be activated... Retry', retryCount + 1);
+                // Check subscription (accept active, trialing, or incomplete)
+                const validStatuses = ['active', 'trialing', 'incomplete'];
+                if (!data.subscription || !validStatuses.includes(data.subscription.status)) {
+                    // If coming from payment and subscription not ready yet, wait for webhook
+                    if (fromPayment && retryCount < 15) {
+                        console.log('Waiting for subscription to be processed... Retry', retryCount + 1);
+                        // Show user-friendly message
+                        planBadge.textContent = 'Processing Payment...';
+                        planInfo.innerHTML = '<p>Your payment is being processed. Please wait...</p>';
                         setTimeout(() => loadDashboard(retryCount + 1), 2000); // Retry after 2 seconds
                         return;
                     }
-                    window.location.href = '/pricing.html';
+                    // After all retries failed, redirect to pricing
+                    window.location.href = '/pricing.html?error=subscription_not_found';
                     return;
                 }
 
@@ -457,8 +462,13 @@
                 planBadge.className = `plan-badge plan-${planId}`;
 
                 const endDate = new Date(data.subscription.current_period_end);
+                const statusDisplay = {
+                    'active': '✓ Active',
+                    'trialing': '🎯 Trial Period',
+                    'incomplete': '⏳ Processing'
+                };
                 planInfo.innerHTML = `
-                    <p><strong>Status:</strong> ${data.subscription.status === 'active' ? '✓ Active' : data.subscription.status}</p>
+                    <p><strong>Status:</strong> ${statusDisplay[data.subscription.status] || data.subscription.status}</p>
                     <p><strong>Renews:</strong> ${endDate.toLocaleDateString('en-GB')}</p>
                     ${data.subscription.cancel_at_period_end ? '<p style="color: #f44336;"><strong>⚠ Cancels at period end</strong></p>' : ''}
                 `;

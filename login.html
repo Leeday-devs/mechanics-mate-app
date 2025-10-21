@@ -259,12 +259,16 @@
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('userEmail', data.user.email);
 
+                    console.log('[Login] Login successful. Has subscription:', data.hasSubscription);
+
                     // Check if user has subscription
                     if (data.hasSubscription) {
-                        // Redirect to main app
-                        window.location.href = '/';
+                        // Redirect to dashboard
+                        console.log('[Login] Redirecting to dashboard');
+                        window.location.href = '/dashboard.html';
                     } else {
                         // Redirect to pricing page
+                        console.log('[Login] No subscription, redirecting to pricing');
                         window.location.href = '/pricing.html';
                     }
                 } else {
@@ -283,6 +287,7 @@
         // Check if already logged in
         const token = localStorage.getItem('authToken');
         if (token) {
+            console.log('[Login] Existing token found, verifying...');
             // Verify token is still valid
             fetch('/api/auth/me', {
                 headers: {
@@ -290,7 +295,10 @@
                 }
             }).then(response => {
                 if (response.ok) {
-                    window.location.href = '/';
+                    console.log('[Login] Token valid, redirecting to dashboard');
+                    window.location.href = '/dashboard.html';
+                } else {
+                    console.log('[Login] Token invalid, staying on login page');
                 }
             });
         }

@@ -404,7 +404,10 @@
         async function loadDashboard(retryCount = 0) {
             const token = localStorage.getItem('authToken');
 
+            console.log('[Dashboard] Loading dashboard... (retry:', retryCount + ')');
+
             if (!token) {
+                console.error('[Dashboard] No auth token found');
                 window.location.href = '/login.html';
                 return;
             }
@@ -412,48 +415,73 @@
             // Check if coming from successful payment
             const urlParams = new URLSearchParams(window.location.search);
             const fromPayment = urlParams.get('success') === 'true';
+            console.log('[Dashboard] From payment:', fromPayment);
 
             loadingOverlay.classList.add('show');
 
             try {
+                console.log('[Dashboard] Calling /api/auth/me...');
                 const response = await fetch('/api/auth/me', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
 
+                console.log('[Dashboard] API response status:', response.status);
+
                 if (!response.ok) {
+                    console.error('[Dashboard] API call failed, redirecting to login');
                     localStorage.removeItem('authToken');
+                    loadingOverlay.classList.remove('show');
                     window.location.href = '/login.html';
                     return;
                 }
 
                 const data = await response.json();
+                console.log('[Dashboard] API response data:', data);
 
                 // Update user name
                 userName.textContent = data.user.email.split('@')[0];
+                console.log('[Dashboard] Username set:', data.user.email);
 
                 // Check if admin
                 if (data.isAdmin) {
                     adminBtn.style.display = 'block';
+                    console.log('[Dashboard] User is admin');
                 }
 
                 // Check subscription (accept active, trialing, or incomplete)
                 const validStatuses = ['active', 'trialing', 'incomplete'];
+                console.log('[Dashboard] Checking subscription...');
+                console.log('[Dashboard] Subscription exists:', !!data.subscription);
+                if (data.subscription) {
+                    console.log('[Dashboard] Subscription status:', data.subscription.status);
+                    console.log('[Dashboard] Status is valid:', validStatuses.includes(data.subscription.status));
+                }
+
                 if (!data.subscription || !validStatuses.includes(data.subscription.status)) {
+                    console.warn('[Dashboard] No valid subscription found');
+
                     // If coming from payment and subscription not ready yet, wait for webhook
                     if (fromPayment && retryCount < 15) {
-                        console.log('Waiting for subscription to be processed... Retry', retryCount + 1);
+                        console.log('[Dashboard] Waiting for subscription webhook... Retry', retryCount + 1, 'of 15');
                         // Show user-friendly message
                         planBadge.textContent = 'Processing Payment...';
                         planInfo.innerHTML = '<p>Your payment is being processed. Please wait...</p>';
+                        // Keep loading overlay visible during retry
                         setTimeout(() => loadDashboard(retryCount + 1), 2000); // Retry after 2 seconds
                         return;
                     }
-                    // After all retries failed, redirect to pricing
+
+                    // After all retries failed or not from payment, redirect to pricing
+                    console.error('[Dashboard] No subscription after', retryCount, 'retries. Redirecting to pricing.');
+                    loadingOverlay.classList.remove('show');
                     window.location.href = '/pricing.html?error=subscription_not_found';
                     return;
                 }
+
+                console.log('[Dashboard] Valid subscription found, loading dashboard data...');
 
                 // Update plan info
                 const planId = data.subscription.plan_id;
@@ -489,12 +517,14 @@
                     progressFill.classList.add('warning');
                 }
 
+                console.log('[Dashboard] Dashboard loaded successfully!');
                 loadingOverlay.classList.remove('show');
 
             } catch (error) {
-                console.error('Dashboard error:', error);
+                console.error('[Dashboard] Critical error:', error);
+                console.error('[Dashboard] Error stack:', error.stack);
                 loadingOverlay.classList.remove('show');
-                alert('Error loading dashboard. Please try again.');
+                alert('Error loading dashboard: ' + error.message + '\n\nPlease check console for details and try again.');
             }
         }
 

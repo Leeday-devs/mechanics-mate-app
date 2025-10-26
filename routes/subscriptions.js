@@ -3,6 +3,7 @@ const stripe = require('../lib/stripe');
 const { supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
 const { PLAN_PRICES } = require('../lib/pricing');
+const logger = require('../lib/logger');
 
 const router = express.Router();
 
@@ -68,12 +69,33 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
             }
         });
 
+        // Log checkout session creation
+        logger.logPayment({
+            userId,
+            eventType: 'checkout_session_created',
+            stripePlan: planId,
+            amount: 'pending',
+            success: true,
+            message: `Checkout session created for plan: ${planId}`
+        }).catch(err => console.error('Failed to log payment:', err));
+
         res.json({
             sessionId: session.id,
             url: session.url
         });
     } catch (error) {
         console.error('Checkout error:', error);
+
+        // Log checkout error
+        logger.logPayment({
+            userId,
+            eventType: 'checkout_session_failed',
+            stripePlan: planId,
+            amount: '0',
+            success: false,
+            message: error.message
+        }).catch(err => console.error('Failed to log payment error:', err));
+
         res.status(500).json({ error: 'Error creating checkout session' });
     }
 });
@@ -100,9 +122,30 @@ router.post('/create-portal', authenticateToken, async (req, res) => {
             return_url: `${req.headers.origin || 'http://localhost:3000'}/dashboard.html`
         });
 
+        // Log portal session creation
+        logger.logPayment({
+            userId,
+            eventType: 'portal_session_created',
+            stripePlan: subscription.plan_id || 'unknown',
+            amount: '0',
+            success: true,
+            message: 'Billing portal session created'
+        }).catch(err => console.error('Failed to log portal session:', err));
+
         res.json({ url: session.url });
     } catch (error) {
         console.error('Portal error:', error);
+
+        // Log portal error
+        logger.logPayment({
+            userId,
+            eventType: 'portal_session_failed',
+            stripePlan: 'unknown',
+            amount: '0',
+            success: false,
+            message: error.message
+        }).catch(err => console.error('Failed to log portal error:', err));
+
         res.status(500).json({ error: 'Error creating portal session' });
     }
 });
@@ -166,6 +209,14 @@ async function handleSubscriptionUpdate(subscription) {
 
     if (!userId) {
         console.error('No user ID found for customer:', customerId);
+        logger.logError({
+            title: 'Subscription Update Error',
+            message: `No user ID found for customer: ${customerId}`,
+            endpoint: '/api/subscriptions/webhook',
+            method: 'POST',
+            statusCode: 500,
+            metadata: { subscriptionId, customerId }
+        }).catch(err => console.error('Failed to log error:', err));
         return;
     }
 
@@ -192,6 +243,15 @@ async function handleSubscriptionUpdate(subscription) {
             onConflict: 'user_id'
         });
 
+    // Log subscription update
+    logger.logSubscription({
+        userId,
+        eventType: 'subscription_updated',
+        planId,
+        status,
+        message: `Subscription updated to ${status} for plan: ${planId}`
+    }).catch(err => console.error('Failed to log subscription update:', err));
+
     console.log('Subscription updated for user:', userId);
 }
 
@@ -204,6 +264,23 @@ async function handleSubscriptionDeleted(subscription) {
         .update({ status: 'canceled' })
         .eq('stripe_subscription_id', subscriptionId);
 
+    // Get user ID for logging
+    const { data: sub } = await supabaseAdmin
+        .from('subscriptions')
+        .select('user_id')
+        .eq('stripe_subscription_id', subscriptionId)
+        .single();
+
+    if (sub) {
+        logger.logSubscription({
+            userId: sub.user_id,
+            eventType: 'subscription_deleted',
+            planId: 'unknown',
+            status: 'canceled',
+            message: `Subscription canceled: ${subscriptionId}`
+        }).catch(err => console.error('Failed to log subscription deletion:', err));
+    }
+
     console.log('Subscription canceled:', subscriptionId);
 }
 
@@ -212,10 +289,29 @@ async function handlePaymentSucceeded(invoice) {
     const subscriptionId = invoice.subscription;
 
     if (subscriptionId) {
+        // Get subscription to find user and plan
+        const { data: sub } = await supabaseAdmin
+            .from('subscriptions')
+            .select('*')
+            .eq('stripe_subscription_id', subscriptionId)
+            .single();
+
         await supabaseAdmin
             .from('subscriptions')
             .update({ status: 'active' })
             .eq('stripe_subscription_id', subscriptionId);
+
+        // Log payment success
+        if (sub) {
+            logger.logPayment({
+                userId: sub.user_id,
+                eventType: 'payment_succeeded',
+                stripePlan: sub.plan_id,
+                amount: (invoice.amount_paid / 100).toFixed(2),
+                success: true,
+                message: `Payment succeeded for subscription: ${subscriptionId}`
+            }).catch(err => console.error('Failed to log payment success:', err));
+        }
 
         console.log('Payment succeeded for subscription:', subscriptionId);
     }
@@ -226,10 +322,29 @@ async function handlePaymentFailed(invoice) {
     const subscriptionId = invoice.subscription;
 
     if (subscriptionId) {
+        // Get subscription to find user and plan
+        const { data: sub } = await supabaseAdmin
+            .from('subscriptions')
+            .select('*')
+            .eq('stripe_subscription_id', subscriptionId)
+            .single();
+
         await supabaseAdmin
             .from('subscriptions')
             .update({ status: 'past_due' })
             .eq('stripe_subscription_id', subscriptionId);
+
+        // Log payment failure
+        if (sub) {
+            logger.logPayment({
+                userId: sub.user_id,
+                eventType: 'payment_failed',
+                stripePlan: sub.plan_id,
+                amount: (invoice.amount_due / 100).toFixed(2),
+                success: false,
+                message: `Payment failed for subscription: ${subscriptionId}. Error: ${invoice.last_payment_error?.message || 'Unknown'}`
+            }).catch(err => console.error('Failed to log payment failure:', err));
+        }
 
         console.log('Payment failed for subscription:', subscriptionId);
     }

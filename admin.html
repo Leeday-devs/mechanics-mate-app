@@ -223,6 +223,97 @@
             color: #999;
         }
 
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            padding: 10px 15px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #2d2d2d;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #ffb300;
+            background: #333;
+        }
+
+        .severity-critical {
+            background: rgba(244, 67, 54, 0.2);
+            color: #ff5252;
+            font-weight: 600;
+        }
+
+        .severity-error {
+            background: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+        }
+
+        .severity-warning {
+            background: rgba(255, 152, 0, 0.15);
+            color: #ff9800;
+        }
+
+        .severity-info {
+            background: rgba(33, 150, 243, 0.15);
+            color: #2196f3;
+        }
+
+        .log-row {
+            padding: 12px;
+            border-bottom: 1px solid #444;
+            border-left: 4px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-row.critical {
+            border-left-color: #ff5252;
+            background: rgba(244, 67, 54, 0.05);
+        }
+
+        .log-row.error {
+            border-left-color: #f44336;
+        }
+
+        .log-row.warning {
+            border-left-color: #ff9800;
+        }
+
+        .log-row.info {
+            border-left-color: #2196f3;
+        }
+
+        .log-content {
+            flex: 1;
+        }
+
+        .log-title {
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+
+        .log-message {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .log-time {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+        }
+
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -290,6 +381,44 @@
                 <div class="loading">
                     <div class="spinner"></div>
                     <p>Loading users...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="section">
+            <div class="section-title">📋 Application Logs</div>
+
+            <!-- Log Filters -->
+            <div class="filters">
+                <select class="filter-input" id="typeFilter">
+                    <option value="">All Types</option>
+                    <option value="login">Login</option>
+                    <option value="error">Error</option>
+                    <option value="api_call">API Call</option>
+                    <option value="payment">Payment</option>
+                    <option value="chat">Chat</option>
+                    <option value="admin_action">Admin</option>
+                </select>
+                <select class="filter-input" id="severityFilter">
+                    <option value="">All Severities</option>
+                    <option value="info">Info</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                    <option value="critical">Critical</option>
+                </select>
+                <input type="text" class="filter-input" id="searchInput" placeholder="Search logs...">
+                <button class="btn btn-white" onclick="loadLogs()">Refresh</button>
+            </div>
+
+            <!-- Log Summary -->
+            <div class="filters" id="logSummary"></div>
+
+            <!-- Logs List -->
+            <div id="logsList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading logs...</p>
                 </div>
             </div>
         </div>
@@ -394,11 +523,162 @@
             usersTable.innerHTML = tableHTML;
         }
 
+        /**
+         * Load application logs with filters
+         */
+        async function loadLogs() {
+            const token = localStorage.getItem('authToken');
+            const typeFilter = document.getElementById('typeFilter').value;
+            const severityFilter = document.getElementById('severityFilter').value;
+            const searchInput = document.getElementById('searchInput').value;
+
+            try {
+                // Build query params
+                const params = new URLSearchParams();
+                if (typeFilter) params.append('type', typeFilter);
+                if (severityFilter) params.append('severity', severityFilter);
+                if (searchInput) params.append('search', searchInput);
+                params.append('limit', 50);
+                params.append('page', 1);
+
+                const logsResponse = await fetch(`/api/logs?${params.toString()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (logsResponse.ok) {
+                    const data = await logsResponse.json();
+                    renderLogs(data.logs || []);
+                } else if (logsResponse.status === 403) {
+                    document.getElementById('logsList').innerHTML = '<div class="no-data">Admin access required</div>';
+                } else {
+                    document.getElementById('logsList').innerHTML = '<div class="no-data">Error loading logs</div>';
+                }
+            } catch (error) {
+                console.error('Load logs error:', error);
+                document.getElementById('logsList').innerHTML = '<div class="no-data">Error loading logs</div>';
+            }
+        }
+
+        /**
+         * Load log statistics
+         */
+        async function loadLogStats() {
+            const token = localStorage.getItem('authToken');
+
+            try {
+                const statsResponse = await fetch('/api/logs/stats/summary?hours=24', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (statsResponse.ok) {
+                    const data = await statsResponse.json();
+                    const summary = data.summary;
+
+                    const summaryHTML = `
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px;">
+                            <div><strong>Total Errors (24h):</strong> <span style="color: #f44336;">${summary.totalErrors || 0}</span></div>
+                            <div><strong>Critical:</strong> <span style="color: #ff5252;">${summary.criticalErrors || 0}</span></div>
+                            <div><strong>Total Logins:</strong> <span style="color: #4caf50;">${summary.totalLogins || 0}</span></div>
+                            <div><strong>Failed Logins:</strong> <span style="color: #ff9800;">${summary.failedLogins || 0}</span></div>
+                            <div><strong>Avg Response Time:</strong> <span style="color: #2196f3;">${summary.avgResponseTimeMs}ms</span></div>
+                        </div>
+                    `;
+
+                    document.getElementById('logSummary').innerHTML = summaryHTML;
+                }
+            } catch (error) {
+                console.error('Load stats error:', error);
+            }
+        }
+
+        /**
+         * Render logs in the UI
+         */
+        function renderLogs(logs) {
+            const logsList = document.getElementById('logsList');
+
+            if (!logs || logs.length === 0) {
+                logsList.innerHTML = '<div class="no-data">No logs found</div>';
+                return;
+            }
+
+            const logsHTML = logs.map(log => {
+                const timestamp = new Date(log.created_at).toLocaleString('en-GB');
+                const severityClass = log.severity || 'info';
+
+                return `
+                    <div class="log-row ${severityClass}">
+                        <div class="log-content">
+                            <div class="log-title">${escapeHtml(log.title)}</div>
+                            <div class="log-message">${escapeHtml(log.message)}</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                                ${log.endpoint ? `<span>${log.method} ${log.endpoint}</span> | ` : ''}
+                                ${log.status_code ? `<span>Status: ${log.status_code}</span> | ` : ''}
+                                <span>${log.log_type || 'system'}</span>
+                            </div>
+                        </div>
+                        <div class="log-time">${timestamp}</div>
+                    </div>
+                `;
+            }).join('');
+
+            logsList.innerHTML = logsHTML;
+        }
+
+        /**
+         * Escape HTML to prevent XSS
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /**
+         * Load admin data on page load
+         */
+        async function initializeAdminPage() {
+            const token = localStorage.getItem('authToken');
+
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Load main admin data (stats and users)
+            await loadAdminData();
+
+            // Load logs and stats
+            await loadLogStats();
+            await loadLogs();
+
+            // Set up filter event listeners
+            document.getElementById('typeFilter').addEventListener('change', () => {
+                loadLogs();
+                loadLogStats();
+            });
+            document.getElementById('severityFilter').addEventListener('change', () => {
+                loadLogs();
+                loadLogStats();
+            });
+            document.getElementById('searchInput').addEventListener('keyup', () => {
+                loadLogs();
+            });
+        }
+
         // Load admin data on page load
-        loadAdminData();
+        initializeAdminPage();
 
         // Refresh every 30 seconds
-        setInterval(loadAdminData, 30000);
+        setInterval(async () => {
+            await loadAdminData();
+            await loadLogStats();
+            await loadLogs();
+        }, 30000);
     </script>
 </body>
 </html>

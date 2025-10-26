@@ -400,6 +400,16 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
         logMessage(userId, message, assistantMessage, inputTokens, outputTokens, costGBP)
             .catch(err => console.error('Error logging message:', err));
 
+        // Log successful chat
+        logger.logChat({
+            userId,
+            messageLength: message.length,
+            tokensUsed: inputTokens + outputTokens,
+            costGBP: parseFloat(costGBP.toFixed(2)),
+            success: true,
+            message: `Chat message processed (${inputTokens} input + ${outputTokens} output tokens)`
+        }).catch(err => console.error('Failed to log chat:', err));
+
         res.json({
             response: assistantMessage,
             conversationHistory: [
@@ -418,6 +428,17 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
 
     } catch (error) {
         console.error('Error calling Claude API:', error);
+
+        // Log chat error
+        logger.logChat({
+            userId: req.user?.id,
+            messageLength: req.body?.message?.length || 0,
+            tokensUsed: 0,
+            costGBP: 0,
+            success: false,
+            message: error.message || 'Claude API error'
+        }).catch(err => console.error('Failed to log chat error:', err));
+
         res.status(500).json({
             error: 'Failed to get response from AI assistant. Please try again.',
             errorCode: 'CLAUDE_API_ERROR'

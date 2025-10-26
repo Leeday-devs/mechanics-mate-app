@@ -1,6 +1,7 @@
 const express = require('express');
 const { supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { PLAN_MRR } = require('../lib/pricing');
 
 const router = express.Router();
 
@@ -62,15 +63,9 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
         const totalActiveSubscriptions = activeSubscriptions?.length || 0;
 
         // Calculate monthly recurring revenue
-        const PLAN_PRICES = {
-            starter: 4.99,
-            professional: 14.99,
-            workshop: 39.99
-        };
-
         let monthlyRevenue = 0;
         activeSubscriptions?.forEach(sub => {
-            monthlyRevenue += PLAN_PRICES[sub.plan_id] || 0;
+            monthlyRevenue += PLAN_MRR[sub.plan_id] || 0;
         });
 
         // Get total messages this month
@@ -104,7 +99,8 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
 // Get recent message history
 router.get('/messages', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 50;
+        // Validate and constrain limit parameter (1-500)
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 500);
 
         const { data: messages, error } = await supabaseAdmin
             .from('message_history')

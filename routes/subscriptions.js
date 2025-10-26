@@ -2,15 +2,9 @@ const express = require('express');
 const stripe = require('../lib/stripe');
 const { supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
+const { PLAN_PRICES } = require('../lib/pricing');
 
 const router = express.Router();
-
-// Plan pricing IDs from environment
-const PLAN_PRICES = {
-    starter: process.env.STRIPE_PRICE_STARTER,
-    professional: process.env.STRIPE_PRICE_PROFESSIONAL,
-    workshop: process.env.STRIPE_PRICE_WORKSHOP
-};
 
 // Create Stripe checkout session
 router.post('/create-checkout', authenticateToken, async (req, res) => {

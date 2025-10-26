@@ -1,11 +1,5 @@
 const { supabaseAdmin } = require('../lib/supabase');
-
-// Plan message limits
-const PLAN_LIMITS = {
-    starter: 50,
-    professional: 200,
-    workshop: -1 // -1 = unlimited
-};
+const { PLAN_LIMITS } = require('../lib/pricing');
 
 // Get current month string (YYYY-MM format)
 function getCurrentMonth() {
@@ -130,6 +124,5 @@ async function logMessage(userId, messageText, responseText, tokensInput, tokens
 module.exports = {
     checkQuota,
     incrementQuota,
-    logMessage,
-    PLAN_LIMITS
+    logMessage
 };

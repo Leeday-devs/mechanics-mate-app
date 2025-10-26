@@ -107,7 +107,7 @@ app.use(cors({
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true);
 
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+        if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
             console.warn('⚠️  CORS blocked request from:', origin);
@@ -374,14 +374,14 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
     } catch (error) {
         console.error('Error calling Claude API:', error);
         res.status(500).json({
-            error: 'Failed to get response from AI assistant',
-            details: error.message
+            error: 'Failed to get response from AI assistant. Please try again.',
+            errorCode: 'CLAUDE_API_ERROR'
         });
     }
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', apiLimiter, (req, res) => {
     res.json({ status: 'ok', message: 'My Mechanic API is running' });
 });
 

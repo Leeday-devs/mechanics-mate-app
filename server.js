@@ -91,8 +91,11 @@ console.log('✅ Environment validation passed');
 const authRoutes = require('./routes/auth');
 const subscriptionRoutes = require('./routes/subscriptions');
 const adminRoutes = require('./routes/admin');
+const logsRoutes = require('./routes/logs');
 const { authenticateToken, requireSubscription } = require('./middleware/auth');
+const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./middleware/logger');
 const { checkQuota, incrementQuota, logMessage } = require('./utils/quota');
+const logger = require('./lib/logger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -160,6 +163,10 @@ app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }))
 app.use(express.json());
 app.use('/api/', apiLimiter); // Apply rate limiting to all API endpoints
 
+// Logging middleware - logs all API calls and security events
+app.use('/api/', securityLoggingMiddleware); // Detect suspicious activity
+app.use('/api/', requestLoggingMiddleware); // Log all API calls
+
 // HTML Page Routes - MUST be defined BEFORE static middleware
 const path = require('path');
 
@@ -181,6 +188,7 @@ app.get('/app', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/logs', logsRoutes); // Comprehensive logging endpoints
 
 // Serve static files AFTER route handlers to prevent index.html from overriding root
 app.use(express.static('.', { index: false })); // Disable auto-serving index.html

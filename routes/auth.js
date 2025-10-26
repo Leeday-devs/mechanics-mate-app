@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const { supabase, supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
+const logger = require('../lib/logger');
 
 const router = express.Router();
 
@@ -86,6 +87,16 @@ router.post('/login', authLimiter, async (req, res) => {
 
         if (authError) {
             console.error('Login error:', authError);
+
+            // Log failed login attempt
+            logger.logLogin({
+                email,
+                success: false,
+                ipAddress: req.ip,
+                userAgent: req.get('user-agent'),
+                reason: 'Invalid credentials'
+            }).catch(err => console.error('Failed to log login:', err));
+
             return res.status(401).json({ error: 'Invalid email or password' });
         }
 
@@ -104,6 +115,15 @@ router.post('/login', authLimiter, async (req, res) => {
             .in('status', ['active', 'trialing', 'incomplete'])
             .single();
 
+        // Log successful login (asynchronously, don't block response)
+        logger.logLogin({
+            userId: authData.user.id,
+            email: authData.user.email,
+            success: true,
+            ipAddress: req.ip,
+            userAgent: req.get('user-agent')
+        }).catch(err => console.error('Failed to log login:', err));
+
         res.json({
             success: true,
             token,
@@ -117,6 +137,19 @@ router.post('/login', authLimiter, async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
+
+        // Log error
+        logger.logError({
+            title: 'Login Error',
+            message: error.message,
+            error,
+            endpoint: '/api/auth/login',
+            method: 'POST',
+            statusCode: 500,
+            ipAddress: req.ip,
+            userAgent: req.get('user-agent')
+        }).catch(err => console.error('Failed to log error:', err));
+
         res.status(500).json({ error: 'Error logging in' });
     }
 });
@@ -162,9 +195,32 @@ router.get('/me', authenticateToken, async (req, res) => {
 
 // Logout (client-side will remove token)
 router.post('/logout', authenticateToken, async (req, res) => {
-    // Supabase signOut
-    await supabase.auth.signOut();
-    res.json({ success: true, message: 'Logged out successfully' });
+    try {
+        // Supabase signOut
+        await supabase.auth.signOut();
+
+        // Log logout event
+        logger.logLogout({
+            userId: req.user.id,
+            email: req.user.email,
+            ipAddress: req.ip,
+            userAgent: req.get('user-agent')
+        }).catch(err => console.error('Failed to log logout:', err));
+
+        res.json({ success: true, message: 'Logged out successfully' });
+    } catch (error) {
+        console.error('Logout error:', error);
+        logger.logError({
+            userId: req.user.id,
+            title: 'Logout Error',
+            message: error.message,
+            error,
+            endpoint: '/api/auth/logout',
+            method: 'POST'
+        }).catch(err => console.error('Failed to log error:', err));
+
+        res.status(500).json({ error: 'Error logging out' });
+    }
 });
 
 module.exports = router;

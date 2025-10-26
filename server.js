@@ -28,10 +28,47 @@ if (missingVars.length > 0) {
     process.exit(1);
 }
 
-// Warn if using live Stripe keys in development
+// CRITICAL: Warn if using live Stripe keys in development
 if (process.env.NODE_ENV !== 'production' && process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')) {
-    console.warn('⚠️  WARNING: Using LIVE Stripe keys in development environment!');
-    console.warn('   This can result in real charges. Use test keys (sk_test_...) for development.');
+    console.error('');
+    console.error('╔════════════════════════════════════════════════════════════╗');
+    console.error('║  🚨 CRITICAL SECURITY ISSUE: LIVE STRIPE KEYS IN DEV MODE! 🚨  ║');
+    console.error('╚════════════════════════════════════════════════════════════╝');
+    console.error('');
+    console.error('  ❌ NODE_ENV = development');
+    console.error('  ❌ STRIPE_SECRET_KEY starts with sk_live_');
+    console.error('');
+    console.error('  RISK: Real charges will be processed during testing!');
+    console.error('');
+    console.error('  ACTION REQUIRED:');
+    console.error('  1. Stop the server NOW');
+    console.error('  2. Read: STRIPE_KEYS_SETUP.md');
+    console.error('  3. Get TEST keys from Stripe Dashboard (Test Mode ON)');
+    console.error('  4. Update .env with TEST keys (sk_test_... format)');
+    console.error('  5. Restart server');
+    console.error('');
+    console.error('  NEVER use sk_live_ keys outside production!');
+    console.error('');
+    console.error('  Reference: https://stripe.com/docs/testing');
+    console.error('');
+    process.exit(1);  // Force shutdown
+}
+
+// CRITICAL: Also check publishable key for live mode in development
+if (process.env.NODE_ENV !== 'production' && process.env.STRIPE_PUBLISHABLE_KEY?.startsWith('pk_live_')) {
+    console.error('');
+    console.error('╔════════════════════════════════════════════════════════════╗');
+    console.error('║  🚨 CRITICAL SECURITY ISSUE: LIVE STRIPE KEYS IN DEV MODE! 🚨  ║');
+    console.error('╚════════════════════════════════════════════════════════════╝');
+    console.error('');
+    console.error('  ❌ NODE_ENV = development');
+    console.error('  ❌ STRIPE_PUBLISHABLE_KEY starts with pk_live_');
+    console.error('');
+    console.error('  RISK: Real charges will be processed during testing!');
+    console.error('');
+    console.error('  ACTION REQUIRED: See STRIPE_KEYS_SETUP.md');
+    console.error('');
+    process.exit(1);
 }
 
 // Check for duplicate price IDs

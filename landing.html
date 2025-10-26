@@ -17,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -27,20 +27,27 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2b2b2b 100%);
-            color: #e0e0e0;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #d4d4d8;
             line-height: 1.6;
+            font-weight: 400;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', 'Poppins', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         /* Navigation */
         .nav {
-            background: rgba(26, 26, 26, 0.95);
+            background: rgba(15, 20, 25, 0.95);
             padding: 20px 0;
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 2px solid #d32f2f;
+            border-bottom: 2px solid #10b981;
             backdrop-filter: blur(10px);
         }
 
@@ -59,8 +66,10 @@
             gap: 12px;
             font-size: 24px;
             font-weight: 700;
-            color: #e0e0e0;
+            color: #ffffff;
             text-decoration: none;
+            font-family: 'Playfair Display', sans-serif;
+            letter-spacing: -0.5px;
         }
 
         .nav-logo svg {
@@ -75,14 +84,15 @@
         }
 
         .nav-links a {
-            color: #b0b0b0;
+            color: #a1a1a6;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
+            font-size: 15px;
         }
 
         .nav-links a:hover {
-            color: #ffb300;
+            color: #d4af37;
         }
 
         .nav-cta {
@@ -103,25 +113,25 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(211, 47, 47, 0.6);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
         }
 
         .btn-secondary {
             background: transparent;
-            color: #ffb300;
-            border: 2px solid #ffb300;
+            color: #d4af37;
+            border: 2px solid #d4af37;
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 179, 0, 0.1);
+            background: rgba(212, 175, 55, 0.1);
             transform: translateY(-2px);
         }
 
@@ -134,23 +144,26 @@
         }
 
         .hero h1 {
-            font-size: 64px;
+            font-size: 72px;
             font-weight: 800;
             margin-bottom: 24px;
-            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.2;
+            line-height: 1.1;
+            letter-spacing: -1px;
         }
 
         .hero p {
-            font-size: 24px;
-            color: #b0b0b0;
+            font-size: 20px;
+            color: #a1a1a6;
             margin-bottom: 40px;
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
+            font-weight: 400;
+            line-height: 1.7;
         }
 
         .hero-cta {
@@ -172,14 +185,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #888;
+            color: #727278;
             font-size: 14px;
+            font-weight: 500;
         }
 
         .badge svg {
             width: 20px;
             height: 20px;
-            fill: #ffb300;
+            fill: #d4af37;
         }
 
         /* Problem/Solution Section */
@@ -190,24 +204,27 @@
         }
 
         .section-title {
-            font-size: 48px;
-            font-weight: 700;
+            font-size: 56px;
+            font-weight: 800;
             text-align: center;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.5px;
         }
 
         .section-subtitle {
             text-align: center;
-            font-size: 20px;
-            color: #888;
+            font-size: 18px;
+            color: #727278;
             margin-bottom: 60px;
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
+            font-weight: 400;
+            line-height: 1.6;
         }
 
         .problem-solution {
@@ -218,18 +235,19 @@
         }
 
         .problem-card, .solution-card {
-            background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(26, 31, 46, 0.8) 0%, rgba(38, 45, 60, 0.8) 100%);
+            border-radius: 16px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
         }
 
         .problem-card {
-            border: 2px solid #c62828;
+            border: 2px solid #ef4444;
         }
 
         .solution-card {
-            border: 2px solid #ffb300;
+            border: 2px solid #10b981;
         }
 
         .card-icon {
@@ -241,7 +259,8 @@
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 20px;
-            color: #e0e0e0;
+            color: #ffffff;
+            font-family: 'Playfair Display', sans-serif;
         }
 
         .card-list {
@@ -250,15 +269,17 @@
 
         .card-list li {
             padding: 12px 0;
-            color: #b0b0b0;
+            color: #a1a1a6;
             display: flex;
             align-items: flex-start;
             gap: 10px;
+            font-size: 15px;
+            line-height: 1.6;
         }
 
         .card-list li:before {
             content: "✗";
-            color: #c62828;
+            color: #ef4444;
             font-weight: bold;
             font-size: 18px;
             flex-shrink: 0;
@@ -266,7 +287,7 @@
 
         .solution-card .card-list li:before {
             content: "✓";
-            color: #ffb300;
+            color: #10b981;
         }
 
         /* Features Grid */
@@ -278,34 +299,38 @@
         }
 
         .feature-card {
-            background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
-            border: 2px solid #444;
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(26, 31, 46, 0.6) 0%, rgba(38, 45, 60, 0.6) 100%);
+            border: 2px solid #2d3748;
+            border-radius: 16px;
             padding: 30px;
             transition: all 0.3s;
+            backdrop-filter: blur(10px);
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: #d32f2f;
-            box-shadow: 0 10px 30px rgba(211, 47, 47, 0.3);
+            transform: translateY(-8px);
+            border-color: #10b981;
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.2);
         }
 
         .feature-icon {
             font-size: 40px;
             margin-bottom: 15px;
+            display: block;
         }
 
         .feature-title {
             font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #e0e0e0;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #ffffff;
+            font-family: 'Playfair Display', sans-serif;
         }
 
         .feature-desc {
-            color: #888;
+            color: #a1a1a6;
             font-size: 15px;
+            line-height: 1.6;
         }
 
         /* How It Works */
@@ -324,7 +349,7 @@
         .step-number {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -333,18 +358,21 @@
             font-weight: 700;
             color: white;
             margin: 0 auto 20px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .step-title {
             font-size: 22px;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 10px;
-            color: #e0e0e0;
+            color: #ffffff;
+            font-family: 'Playfair Display', sans-serif;
         }
 
         .step-desc {
-            color: #888;
+            color: #a1a1a6;
             font-size: 15px;
+            line-height: 1.6;
         }
 
         /* Pricing Preview */
@@ -356,25 +384,26 @@
         }
 
         .pricing-card {
-            background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
-            border: 2px solid #444;
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(26, 31, 46, 0.8) 0%, rgba(38, 45, 60, 0.8) 100%);
+            border: 2px solid #2d3748;
+            border-radius: 16px;
             padding: 40px 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             transition: all 0.3s;
             position: relative;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
         .pricing-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(211, 47, 47, 0.4);
-            border-color: #d32f2f;
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
         }
 
         .pricing-card.popular {
-            border: 3px solid #d32f2f;
-            border-top: 4px solid #ffb300;
+            border: 3px solid #10b981;
+            border-top: 4px solid #d4af37;
         }
 
         .popular-badge {
@@ -382,27 +411,28 @@
             top: -15px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
             color: white;
             padding: 8px 20px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
-            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.5);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
         }
 
         .plan-name {
             font-size: 28px;
             font-weight: 700;
-            color: #e0e0e0;
+            color: #ffffff;
             margin-bottom: 10px;
+            font-family: 'Playfair Display', sans-serif;
         }
 
         .plan-price {
             font-size: 48px;
             font-weight: 800;
-            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -411,14 +441,15 @@
 
         .plan-price span {
             font-size: 20px;
-            color: #888;
+            color: #727278;
             font-weight: normal;
         }
 
         .plan-description {
-            color: #b0b0b0;
+            color: #a1a1a6;
             font-size: 14px;
             margin-bottom: 30px;
+            line-height: 1.5;
         }
 
         .plan-features {
@@ -429,15 +460,16 @@
 
         .plan-features li {
             padding: 12px 0;
-            color: #e0e0e0;
+            color: #d4d4d8;
             font-size: 15px;
             display: flex;
             align-items: center;
+            line-height: 1.6;
         }
 
         .plan-features li:before {
             content: "✓";
-            color: #ffb300;
+            color: #10b981;
             font-weight: bold;
             margin-right: 10px;
             font-size: 18px;
@@ -450,50 +482,56 @@
         }
 
         .faq-item {
-            background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
-            border: 2px solid #444;
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(26, 31, 46, 0.6) 0%, rgba(38, 45, 60, 0.6) 100%);
+            border: 2px solid #2d3748;
+            border-radius: 16px;
             padding: 30px;
             margin-bottom: 20px;
             transition: all 0.3s;
+            backdrop-filter: blur(10px);
         }
 
         .faq-item:hover {
-            border-color: #d32f2f;
+            border-color: #10b981;
         }
 
         .faq-question {
             font-size: 20px;
-            font-weight: 600;
-            color: #e0e0e0;
+            font-weight: 700;
+            color: #ffffff;
             margin-bottom: 15px;
+            font-family: 'Playfair Display', sans-serif;
         }
 
         .faq-answer {
-            color: #888;
+            color: #a1a1a6;
             font-size: 16px;
             line-height: 1.7;
         }
 
         /* CTA Section */
         .cta-section {
-            background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             padding: 80px 20px;
             text-align: center;
             margin-top: 80px;
         }
 
         .cta-section h2 {
-            font-size: 48px;
-            font-weight: 700;
+            font-size: 56px;
+            font-weight: 800;
             color: white;
             margin-bottom: 20px;
+            font-family: 'Playfair Display', sans-serif;
+            letter-spacing: -0.5px;
         }
 
         .cta-section p {
             font-size: 20px;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.95);
             margin-bottom: 40px;
+            font-weight: 400;
+            line-height: 1.6;
         }
 
         .cta-buttons {
@@ -504,7 +542,7 @@
 
         .btn-white {
             background: white;
-            color: #d32f2f;
+            color: #10b981;
             font-weight: 700;
         }
 
@@ -521,15 +559,16 @@
         }
 
         .btn-outline-white:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         /* Footer */
         .footer {
-            background: #1a1a1a;
+            background: #0a0d11;
             padding: 40px 20px;
-            border-top: 2px solid #d32f2f;
+            border-top: 2px solid #10b981;
         }
 
         .footer-container {
@@ -542,9 +581,10 @@
 
         .footer-section h3 {
             font-size: 18px;
-            font-weight: 600;
-            color: #e0e0e0;
+            font-weight: 700;
+            color: #ffffff;
             margin-bottom: 15px;
+            font-family: 'Playfair Display', sans-serif;
         }
 
         .footer-links {
@@ -556,22 +596,23 @@
         }
 
         .footer-links a {
-            color: #888;
+            color: #727278;
             text-decoration: none;
             transition: color 0.3s;
+            font-size: 15px;
         }
 
         .footer-links a:hover {
-            color: #ffb300;
+            color: #d4af37;
         }
 
         .footer-bottom {
             max-width: 1200px;
             margin: 40px auto 0;
             padding-top: 30px;
-            border-top: 1px solid #333;
+            border-top: 1px solid #2d3748;
             text-align: center;
-            color: #666;
+            color: #5a5a63;
             font-size: 14px;
         }
 

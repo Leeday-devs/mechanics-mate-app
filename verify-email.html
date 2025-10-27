@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Mechanics Mate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2b2b2b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 90%;
+            padding: 2rem;
+            background-color: #2b2b2b;
+            border-radius: 12px;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.95rem;
+        }
+
+        .status {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .status.loading {
+            background-color: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+        }
+
+        .status.success {
+            background-color: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+        }
+
+        .status.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+        }
+
+        .status-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-text {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-description {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #3a3a3a;
+            border-top-color: #ffb300;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #c62828;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(211, 47, 47, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: #3a3a3a;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4a4a4a;
+        }
+
+        .error-details {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🚗</div>
+            <h1>Verify Your Email</h1>
+            <p class="subtitle">Mechanics Mate - AI-Powered Automotive Assistant</p>
+        </div>
+
+        <div id="status" class="status loading">
+            <div class="status-icon">
+                <div class="spinner"></div>
+            </div>
+            <p class="status-text">Verifying your email...</p>
+            <p class="status-description">Please wait while we confirm your email address.</p>
+        </div>
+
+        <div id="actions" class="action-buttons" style="display: none;">
+            <a href="/chat" class="btn btn-primary">Go to Dashboard</a>
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+        </div>
+
+        <div id="error-details" class="error-details" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function verifyEmail() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+
+            if (!token) {
+                showError('No verification token provided. Please check your email link.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/verify-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess('Your email has been verified successfully!');
+                } else {
+                    showError(data.error || 'Failed to verify email. The link may have expired.');
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                showError('An error occurred while verifying your email. Please try again.');
+            }
+        }
+
+        function showSuccess(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = `
+                <div class="status-icon">✓</div>
+                <p class="status-text">Email Verified!</p>
+                <p class="status-description">${message}</p>
+            `;
+            document.getElementById('actions').style.display = 'flex';
+        }
+
+        function showError(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status error';
+            statusDiv.innerHTML = `
+                <div class="status-icon">✕</div>
+                <p class="status-text">Verification Failed</p>
+                <p class="status-description">${message}</p>
+            `;
+            document.getElementById('actions').style.display = 'flex';
+        }
+
+        // Start verification on page load
+        verifyEmail();
+    </script>
+</body>
+</html>

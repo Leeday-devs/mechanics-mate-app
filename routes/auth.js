@@ -7,6 +7,7 @@ const csrf = require('csurf');
 const { supabase, supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
 const logger = require('../lib/logger');
+const emailVerification = require('../utils/emailVerification');
 
 const router = express.Router();
 
@@ -315,6 +316,84 @@ router.post('/logout', csrfProtection, authenticateToken, async (req, res) => {
         }).catch(err => console.error('Failed to log error:', err));
 
         res.status(500).json({ error: 'Error logging out' });
+    }
+});
+
+// ============================================
+// EMAIL VERIFICATION
+// ============================================
+
+// Verify email with token from email link
+router.post('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        if (!token) {
+            return res.status(400).json({ error: 'Verification token required' });
+        }
+
+        // Verify the token
+        const verification = await emailVerification.verifyEmailToken(token);
+        if (!verification) {
+            return res.status(400).json({
+                error: 'Invalid or expired verification token',
+                code: 'TOKEN_EXPIRED'
+            });
+        }
+
+        // Mark email as verified
+        const success = await emailVerification.markEmailAsVerified(token);
+        if (!success) {
+            return res.status(500).json({ error: 'Failed to verify email' });
+        }
+
+        // Log email verification
+        logger.logPayment({
+            userId: verification.user_id,
+            eventType: 'email_verified',
+            stripePlan: 'n/a',
+            amount: '0',
+            success: true,
+            message: `Email verified: ${verification.email}`
+        }).catch(err => console.error('Failed to log email verification:', err));
+
+        res.json({
+            success: true,
+            message: 'Email verified successfully',
+            email: verification.email
+        });
+    } catch (error) {
+        console.error('Email verification error:', error);
+        res.status(500).json({ error: 'Error verifying email' });
+    }
+});
+
+// Resend verification email (authenticated users only)
+router.post('/resend-verification', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userEmail = req.user.email;
+
+        // Create new verification token
+        const token = await emailVerification.createVerificationToken(userId, userEmail);
+
+        // Generate verification link
+        const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+        const verificationLink = emailVerification.generateVerificationLink(token, baseUrl);
+
+        // In a real application, you would send an email here
+        // For now, we'll return the link (in production, use a proper email service like SendGrid)
+        console.log(`📧 Verification link for ${userEmail}: ${verificationLink}`);
+
+        res.json({
+            success: true,
+            message: 'Verification email sent',
+            // In production, remove this line and actually send the email
+            verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
+        });
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({ error: 'Failed to send verification email' });
     }
 });
 

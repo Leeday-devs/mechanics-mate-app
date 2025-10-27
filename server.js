@@ -7,6 +7,33 @@ const helmet = require('helmet');
 require('dotenv').config();
 
 // ============================================
+// SENTRY ERROR TRACKING (Production Only)
+// ============================================
+const Sentry = require("@sentry/node");
+const { CaptureConsole } = require("@sentry/integrations");
+
+if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+    Sentry.init({
+        dsn: process.env.SENTRY_DSN,
+        environment: process.env.SENTRY_ENVIRONMENT || 'production',
+        integrations: [
+            new CaptureConsole({
+                levels: ['error', 'warn']
+            })
+        ],
+        tracesSampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE || '0.1'),
+        beforeSend(event, hint) {
+            if (event.exception) {
+                const error = hint.originalException;
+                console.error('🔴 Sentry capturing error:', error.message);
+            }
+            return event;
+        }
+    });
+    console.log('✅ Sentry error tracking initialized');
+}
+
+// ============================================
 // ENVIRONMENT VALIDATION
 // ============================================
 const requiredEnvVars = [
@@ -156,6 +183,11 @@ app.use(cors({
     },
     credentials: true
 }));
+
+// Attach Sentry request handler (must be first error handler)
+if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+    app.use(Sentry.Handlers.requestHandler());
+}
 
 // Stripe webhook needs raw body - must come before express.json()
 app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
@@ -445,6 +477,11 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
         });
     }
 });
+
+// Attach Sentry error handler (must be after all routes and before Netlify export)
+if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+    app.use(Sentry.Handlers.errorHandler());
+}
 
 // Health check endpoint
 app.get('/api/health', apiLimiter, (req, res) => {

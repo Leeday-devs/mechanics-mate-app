@@ -266,6 +266,34 @@ router.post('/logout', csrfProtection, authenticateToken, async (req, res) => {
         // Supabase signOut
         await supabase.auth.signOut();
 
+        // ============================================
+        // ADD TOKEN TO BLACKLIST
+        // ============================================
+        // Blacklist the token to prevent reuse
+        if (req.token) {
+            try {
+                const decodedToken = jwt.decode(req.token);
+                const expiresAt = decodedToken?.exp
+                    ? new Date(decodedToken.exp * 1000)
+                    : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Default 7 days
+
+                await supabaseAdmin
+                    .from('token_blacklist')
+                    .insert({
+                        token_jti: decodedToken?.jti || req.token.substring(0, 50),
+                        user_id: req.user.id,
+                        email: req.user.email,
+                        expires_at: expiresAt.toISOString(),
+                        reason: 'logout'
+                    });
+
+                console.log(`✅ Token blacklisted for user: ${req.user.email}`);
+            } catch (error) {
+                console.error('Failed to blacklist token:', error.message);
+                // Don't fail logout if blacklist fails, but log the error
+            }
+        }
+
         // Log logout event
         logger.logLogout({
             userId: req.user.id,

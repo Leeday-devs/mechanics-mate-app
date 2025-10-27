@@ -15,6 +15,31 @@ async function authenticateToken(req, res, next) {
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+        // ============================================
+        // CHECK TOKEN BLACKLIST
+        // ============================================
+        // Ensure token hasn't been blacklisted (e.g., user logged out)
+        try {
+            const { data: blacklistedToken } = await supabaseAdmin
+                .from('token_blacklist')
+                .select('id')
+                .eq('token_jti', decoded.jti || token.substring(0, 50)) // Use jti or first 50 chars of token
+                .single();
+
+            if (blacklistedToken) {
+                console.warn(`⚠️  Attempt to use blacklisted token for user: ${decoded.email}`);
+                return res.status(401).json({
+                    error: 'Token has been revoked',
+                    code: 'TOKEN_REVOKED'
+                });
+            }
+        } catch (error) {
+            // If token_blacklist table doesn't exist yet, log but continue
+            if (error.code !== 'PGRST116') { // "not found" error code
+                console.warn('⚠️  Could not check token blacklist:', error.message);
+            }
+        }
+
         // Get user from Supabase
         const { data: user, error } = await supabaseAdmin.auth.admin.getUserById(decoded.userId);
 
@@ -27,6 +52,7 @@ async function authenticateToken(req, res, next) {
             id: user.user.id,
             email: user.user.email
         };
+        req.token = token; // Attach token for logout blacklisting
 
         next();
     } catch (error) {

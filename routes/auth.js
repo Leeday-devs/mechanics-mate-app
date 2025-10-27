@@ -8,6 +8,7 @@ const { supabase, supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
 const logger = require('../lib/logger');
 const emailVerification = require('../utils/emailVerification');
+const emailService = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -121,6 +122,41 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
+
+        // ============================================
+        // SEND VERIFICATION EMAIL
+        // ============================================
+        // Create verification token
+        const verificationToken = await emailVerification.createVerificationToken(
+            authData.user.id,
+            email
+        );
+
+        // Generate verification link
+        const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+        const verificationLink = emailVerification.generateVerificationLink(verificationToken, baseUrl);
+
+        // Send verification email (fire and forget - don't block response)
+        emailService.sendVerificationEmail(email, verificationLink, name)
+            .catch(err => {
+                console.error('Failed to send verification email:', err);
+                // Log the error but don't fail the signup
+                logger.logError({
+                    title: 'Email Send Failed',
+                    message: `Failed to send verification email to ${email}`,
+                    error: err,
+                    endpoint: '/api/auth/signup',
+                    method: 'POST',
+                    statusCode: 200,
+                    userId: authData.user.id
+                }).catch(logErr => console.error('Failed to log email error:', logErr));
+            });
+
+        // Also send welcome email (optional, asynchronously)
+        if (process.env.SENDGRID_API_KEY) {
+            emailService.sendWelcomeEmail(email, name)
+                .catch(err => console.warn('Welcome email send failed (non-critical):', err.message));
+        }
 
         res.json({
             success: true,
@@ -381,14 +417,25 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
         const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
         const verificationLink = emailVerification.generateVerificationLink(token, baseUrl);
 
-        // In a real application, you would send an email here
-        // For now, we'll return the link (in production, use a proper email service like SendGrid)
-        console.log(`📧 Verification link for ${userEmail}: ${verificationLink}`);
+        // Send verification email
+        await emailService.sendVerificationEmail(userEmail, verificationLink)
+            .catch(err => {
+                console.error('Failed to send resend verification email:', err);
+                logger.logError({
+                    title: 'Resend Verification Email Failed',
+                    message: `Failed to resend verification email to ${userEmail}`,
+                    error: err,
+                    endpoint: '/api/auth/resend-verification',
+                    method: 'POST',
+                    statusCode: 200,
+                    userId: userId
+                }).catch(logErr => console.error('Failed to log email error:', logErr));
+            });
 
         res.json({
             success: true,
             message: 'Verification email sent',
-            // In production, remove this line and actually send the email
+            // In development, show the link for testing purposes
             verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
         });
     } catch (error) {

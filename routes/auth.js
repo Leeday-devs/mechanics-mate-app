@@ -2,11 +2,57 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const { supabase, supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
 const logger = require('../lib/logger');
 
 const router = express.Router();
+
+// ============================================
+// INPUT VALIDATION RULES
+// ============================================
+const signupValidation = [
+    body('email')
+        .isEmail()
+        .trim()
+        .normalizeEmail()
+        .withMessage('Valid email is required'),
+    body('password')
+        .isLength({ min: 8 })
+        .withMessage('Password must be at least 8 characters'),
+    body('name')
+        .optional()
+        .trim()
+        .isLength({ max: 100 })
+        .withMessage('Name must be less than 100 characters')
+];
+
+const loginValidation = [
+    body('email')
+        .isEmail()
+        .trim()
+        .normalizeEmail()
+        .withMessage('Valid email is required'),
+    body('password')
+        .notEmpty()
+        .withMessage('Password is required')
+];
+
+// Validation error handler middleware
+const handleValidationErrors = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            error: 'Validation failed',
+            details: errors.array().map(err => ({
+                field: err.param,
+                message: err.msg
+            }))
+        });
+    }
+    next();
+};
 
 // Rate limiter for authentication endpoints - prevent brute force attacks
 const authLimiter = rateLimit({
@@ -23,7 +69,7 @@ const authLimiter = rateLimit({
 });
 
 // Sign up with email/password
-router.post('/signup', authLimiter, async (req, res) => {
+router.post('/signup', authLimiter, signupValidation, handleValidationErrors, async (req, res) => {
     try {
         const { email, password, name } = req.body;
 
@@ -71,7 +117,7 @@ router.post('/signup', authLimiter, async (req, res) => {
 });
 
 // Login with email/password
-router.post('/login', authLimiter, async (req, res) => {
+router.post('/login', authLimiter, loginValidation, handleValidationErrors, async (req, res) => {
     try {
         const { email, password } = req.body;
 

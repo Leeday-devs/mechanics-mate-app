@@ -150,7 +150,7 @@ router.post('/create-portal', authenticateToken, async (req, res) => {
     }
 });
 
-// Stripe webhook handler
+// Stripe webhook handler with idempotency
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
@@ -164,6 +164,26 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     } catch (err) {
         console.error('Webhook signature verification failed:', err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // ============================================
+    // WEBHOOK IDEMPOTENCY CHECK
+    // ============================================
+    // Check if this event has already been processed
+    try {
+        const { data: existingEvent } = await supabaseAdmin
+            .from('webhook_events')
+            .select('id')
+            .eq('event_id', event.id)
+            .single();
+
+        if (existingEvent) {
+            console.log(`⚠️  Duplicate webhook event detected: ${event.id} (${event.type}). Ignoring.`);
+            return res.json({ received: true, duplicate: true });
+        }
+    } catch (error) {
+        // If the table doesn't exist or query fails, log but continue
+        console.warn('⚠️  Could not check webhook idempotency:', error.message);
     }
 
     // Handle the event
@@ -190,9 +210,45 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 console.log(`Unhandled event type: ${event.type}`);
         }
 
+        // ============================================
+        // RECORD SUCCESSFUL EVENT PROCESSING
+        // ============================================
+        // Store the event as processed for idempotency
+        try {
+            await supabaseAdmin
+                .from('webhook_events')
+                .insert({
+                    event_id: event.id,
+                    event_type: event.type,
+                    data: event,
+                    status: 'processed'
+                });
+        } catch (error) {
+            console.error('Failed to record webhook event:', error.message);
+            // Don't fail the webhook if we can't record it, but log the error
+        }
+
         res.json({ received: true });
     } catch (error) {
         console.error('Webhook handler error:', error);
+
+        // ============================================
+        // RECORD FAILED EVENT PROCESSING
+        // ============================================
+        // Store the event as failed for debugging
+        try {
+            await supabaseAdmin
+                .from('webhook_events')
+                .insert({
+                    event_id: event.id,
+                    event_type: event.type,
+                    data: event,
+                    status: 'failed'
+                });
+        } catch (dbError) {
+            console.error('Failed to record webhook error:', dbError.message);
+        }
+
         res.status(500).json({ error: 'Webhook handler failed' });
     }
 });

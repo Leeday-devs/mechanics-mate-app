@@ -3,11 +3,24 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const csrf = require('csurf');
 const { supabase, supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
 const logger = require('../lib/logger');
 
 const router = express.Router();
+
+// ============================================
+// CSRF PROTECTION
+// ============================================
+// CSRF protection middleware - use double-submit cookie pattern
+const csrfProtection = csrf({
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+        sameSite: 'lax'
+    }
+});
 
 // ============================================
 // INPUT VALIDATION RULES
@@ -68,8 +81,16 @@ const authLimiter = rateLimit({
     skipSuccessfulRequests: true
 });
 
+// Get CSRF token endpoint - clients call this to get a token before signup/login
+router.get('/csrf-token', csrfProtection, (req, res) => {
+    // Return CSRF token to client
+    res.json({
+        csrfToken: req.csrfToken()
+    });
+});
+
 // Sign up with email/password
-router.post('/signup', authLimiter, signupValidation, handleValidationErrors, async (req, res) => {
+router.post('/signup', csrfProtection, authLimiter, signupValidation, handleValidationErrors, async (req, res) => {
     try {
         const { email, password, name } = req.body;
 
@@ -117,7 +138,7 @@ router.post('/signup', authLimiter, signupValidation, handleValidationErrors, as
 });
 
 // Login with email/password
-router.post('/login', authLimiter, loginValidation, handleValidationErrors, async (req, res) => {
+router.post('/login', csrfProtection, authLimiter, loginValidation, handleValidationErrors, async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -240,7 +261,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 });
 
 // Logout (client-side will remove token)
-router.post('/logout', authenticateToken, async (req, res) => {
+router.post('/logout', csrfProtection, authenticateToken, async (req, res) => {
     try {
         // Supabase signOut
         await supabase.auth.signOut();
@@ -266,6 +287,25 @@ router.post('/logout', authenticateToken, async (req, res) => {
         }).catch(err => console.error('Failed to log error:', err));
 
         res.status(500).json({ error: 'Error logging out' });
+    }
+});
+
+// CSRF error handler middleware
+router.use((err, req, res, next) => {
+    if (err.code === 'EBADCSRFTOKEN') {
+        // Handle CSRF token errors
+        console.warn('⚠️  CSRF token validation failed:', {
+            path: req.path,
+            method: req.method,
+            ip: req.ip
+        });
+        res.status(403).json({
+            error: 'Invalid or missing CSRF token',
+            code: 'CSRF_TOKEN_INVALID'
+        });
+    } else {
+        // Pass other errors to the next handler
+        next(err);
     }
 });
 

@@ -4,6 +4,7 @@ const cors = require('cors');
 const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 // ============================================
@@ -193,6 +194,7 @@ if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
 app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
+app.use(cookieParser()); // Parse cookies for CSRF token validation
 app.use('/api/', apiLimiter); // Apply rate limiting to all API endpoints
 
 // Logging middleware - logs all API calls and security events

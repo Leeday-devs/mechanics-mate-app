@@ -18,7 +18,7 @@ const router = express.Router();
 // CSRF protection middleware - use double-submit cookie pattern
 const csrfProtection = csrf({
     cookie: {
-        httpOnly: true,
+        httpOnly: process.env.NODE_ENV === 'production', // httpOnly only in production
         secure: process.env.NODE_ENV === 'production', // HTTPS only in production
         sameSite: 'lax'
     }

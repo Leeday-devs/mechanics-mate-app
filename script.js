@@ -95,7 +95,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check authentication
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
-        window.location.href = '/login.html';
+        console.log('[Auth] No auth token found. Redirecting to login page...');
+        // Show a brief message before redirecting
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2b2b2b;
+            color: #e0e0e0;
+            padding: 30px;
+            border-radius: 12px;
+            border-top: 3px solid #d32f2f;
+            z-index: 9999;
+            text-align: center;
+            font-family: Inter, sans-serif;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        `;
+        message.innerHTML = '<p style="margin: 0; font-size: 16px; font-weight: 600;">🔐 Please log in to access the chat...</p>';
+        document.body.appendChild(message);
+
+        // Redirect after 1.5 seconds
+        setTimeout(() => {
+            window.location.href = '/login.html';
+        }, 1500);
         return;
     }
 
@@ -519,22 +543,34 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (error.message.includes('Too many requests') || error.message.includes('rate limit')) {
                 errorMessage += 'Too many requests. Please wait a moment before trying again.';
                 canRetry = true;
+            } else if (error.message.includes('Access token required')) {
+                errorMessage = '🔐 You need to log in to use the chat.\n\nPlease log in with your email and password to get started.';
+                setTimeout(() => {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login.html';
+                }, 2000);
+            } else if (error.message.includes('Invalid or expired token') || error.message.includes('Token has been revoked')) {
+                errorMessage = '🔐 Your session has expired. Please log in again.';
+                setTimeout(() => {
+                    localStorage.removeItem('authToken');
+                    window.location.href = '/login.html';
+                }, 2000);
             } else if (error.message.includes('quota exceeded')) {
-                errorMessage = 'Monthly message quota exceeded! Please upgrade your plan or wait until next month.';
-                errorMessage += '\n\nClick here to view pricing plans.';
+                errorMessage = '📊 Monthly message quota exceeded! Please upgrade your plan or wait until next month.';
+                errorMessage += '\n\nWould you like to upgrade your subscription?';
                 setTimeout(() => {
                     if (confirm('Monthly message quota exceeded!\n\nWould you like to upgrade your plan?')) {
                         window.location.href = '/pricing.html';
                     }
                 }, 1000);
-            } else if (error.message.includes('401') || error.message.includes('403') || error.message.includes('token')) {
-                errorMessage = 'Your session has expired. Please log in again.';
+            } else if (error.message.includes('401') || error.message.includes('403')) {
+                errorMessage = '🔐 You need to be logged in to use this feature. Please log in and try again.';
                 setTimeout(() => {
                     localStorage.removeItem('authToken');
                     window.location.href = '/login.html';
                 }, 2000);
-            } else if (error.message.includes('subscription required')) {
-                errorMessage = 'Active subscription required. Please subscribe to continue.';
+            } else if (error.message.includes('subscription required') || error.message.includes('Active subscription required')) {
+                errorMessage = '💳 Active subscription required. Please subscribe to continue chatting and accessing vehicle-specific advice.';
                 setTimeout(() => {
                     window.location.href = '/pricing.html';
                 }, 2000);

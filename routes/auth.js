@@ -86,8 +86,12 @@ const authLimiter = rateLimit({
 // Get CSRF token endpoint - clients call this to get a token before signup/login
 router.get('/csrf-token', csrfProtection, (req, res) => {
     // Return CSRF token to client
+    // req.csrfToken() will generate a new token if one doesn't exist,
+    // or return the existing one if the cookie already has a value
+    const token = req.csrfToken();
+    console.log('[CSRF] Token endpoint called, returning token');
     res.json({
-        csrfToken: req.csrfToken()
+        csrfToken: token
     });
 });
 

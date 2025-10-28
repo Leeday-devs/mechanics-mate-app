@@ -235,7 +235,9 @@
         // Get CSRF token before login
         async function getCsrfToken() {
             try {
-                const response = await fetch('/api/auth/csrf-token');
+                const response = await fetch('/api/auth/csrf-token', {
+                    credentials: 'include' // CRITICAL: Include cookies to maintain session
+                });
                 const data = await response.json();
                 return data.csrfToken;
             } catch (error) {

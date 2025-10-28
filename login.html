@@ -232,6 +232,18 @@
             errorMessage.classList.remove('show');
         }
 
+        // Get CSRF token before login
+        async function getCsrfToken() {
+            try {
+                const response = await fetch('/api/auth/csrf-token');
+                const data = await response.json();
+                return data.csrfToken;
+            } catch (error) {
+                console.error('Error getting CSRF token:', error);
+                return null;
+            }
+        }
+
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideError();
@@ -244,12 +256,20 @@
             loginBtn.innerHTML = '<span class="loading"></span>Logging in...';
 
             try {
+                // Get CSRF token first
+                const csrfToken = await getCsrfToken();
+                if (!csrfToken) {
+                    throw new Error('Could not get CSRF token. Please refresh and try again.');
+                }
+
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
                 });
 
                 const data = await response.json();

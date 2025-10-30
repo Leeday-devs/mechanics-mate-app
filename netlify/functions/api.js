@@ -1,8 +1,6 @@
 const app = require('./server.js');
 const http = require('http');
-
-// Create a persistent HTTP server that we'll use for all requests
-const server = http.createServer(app);
+const { Readable } = require('stream');
 
 // Netlify Function handler for Express app
 // Uses Node.js http module to properly run Express
@@ -21,8 +19,15 @@ exports.handler = async (event, context) => {
             ? Buffer.from(event.body || '', 'base64').toString()
             : (event.body || '');
 
+        // Create a readable stream for the request body
+        const bodyStream = new Readable();
+        if (body) {
+            bodyStream.push(body);
+        }
+        bodyStream.push(null);
+
         // Create a fake request/response using the http module
-        const fakeReq = new http.IncomingMessage(null);
+        const fakeReq = new http.IncomingMessage(bodyStream);
         fakeReq.method = event.httpMethod;
         fakeReq.url = url;
         fakeReq.httpVersion = '1.1';

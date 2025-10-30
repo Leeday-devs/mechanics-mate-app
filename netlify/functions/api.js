@@ -66,6 +66,44 @@ exports.handler = async (event, context) => {
             return true;
         };
 
+        // Set a timeout to prevent hanging requests
+        const timeout = setTimeout(() => {
+            console.error('[Handler] Request timeout');
+            if (!fakeRes.headersSent) {
+                resolve({
+                    statusCode: 504,
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ error: 'Request timeout' }),
+                });
+            }
+        }, 29000); // Netlify functions have 30 second limit
+
+        // Handle errors from the response
+        fakeRes.on('error', (error) => {
+            clearTimeout(timeout);
+            console.error('[Handler] Response error:', error);
+            if (!fakeRes.headersSent) {
+                resolve({
+                    statusCode: 500,
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ error: 'Internal Server Error', message: error.message }),
+                });
+            }
+        });
+
+        // Handle errors from the request
+        fakeReq.on('error', (error) => {
+            clearTimeout(timeout);
+            console.error('[Handler] Request error:', error);
+            if (!fakeRes.headersSent) {
+                resolve({
+                    statusCode: 400,
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ error: 'Bad Request', message: error.message }),
+                });
+            }
+        });
+
         try {
             // Start the request
             if (body) {
@@ -76,7 +114,8 @@ exports.handler = async (event, context) => {
             // Call Express app
             app(fakeReq, fakeRes);
         } catch (error) {
-            console.error('[Handler] Error:', error);
+            clearTimeout(timeout);
+            console.error('[Handler] Synchronous error:', error);
             resolve({
                 statusCode: 500,
                 headers: { 'content-type': 'application/json' },

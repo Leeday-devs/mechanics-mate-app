@@ -19,13 +19,17 @@ exports.handler = async (event, context) => {
             : (event.body || '');
 
         // Create a readable stream for the request body
-        const bodyStream = new Readable();
-        if (body) {
-            bodyStream.push(body);
-        }
-        bodyStream.push(null);
+        const createBodyStream = () => {
+            const stream = new Readable();
+            if (body) {
+                stream.push(body);
+            }
+            stream.push(null);
+            return stream;
+        };
 
-        // Create a mock request object that is a Readable stream with Express properties
+        // Create a mock request object that extends EventEmitter
+        const bodyStream = createBodyStream();
         const fakeReq = Object.assign(bodyStream, {
             method: event.httpMethod,
             url: url,
@@ -35,10 +39,16 @@ exports.handler = async (event, context) => {
             headers: {
                 ...event.headers,
                 'content-length': Buffer.byteLength(body),
+                'content-type': event.headers['content-type'] || 'application/json',
             },
             socket: {
                 remoteAddress: event.requestContext?.identity?.sourceIp || '127.0.0.1',
                 destroy() {},
+                end() {},
+            },
+            connection: {
+                destroy() {},
+                end() {},
             },
         });
 

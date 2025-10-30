@@ -1,6 +1,8 @@
 const app = require('./server.js');
 const { Readable } = require('stream');
 
+console.log('[API] Module loaded. app type:', typeof app, 'app keys:', Object.keys(app || {}).slice(0, 5));
+
 // Direct Netlify Function handler for Express app
 // Avoids serverless-http's framework detection issues
 exports.handler = async (event, context) => {

@@ -74,7 +74,7 @@
 
 [functions]
   node_bundler = "none"
-  external_node_modules = ["express", "serverless-http", "cors", "helmet", "cookie-parser", "csurf", "@supabase/supabase-js", "jsonwebtoken", "express-rate-limit", "dotenv"]
+  external_node_modules = ["express", "cors", "helmet", "cookie-parser", "csurf", "@supabase/supabase-js", "jsonwebtoken", "express-rate-limit", "dotenv", "axios", "@anthropic-ai/sdk", "@sentry/node", "@sentry/integrations", "bcryptjs", "express-validator", "stripe"]
 
 [[headers]]
   for = "/*"

@@ -6,6 +6,15 @@ const { Readable } = require('stream');
 exports.handler = async (event, context) => {
     console.log(`[Handler] ${event.httpMethod} ${event.path}`);
 
+    // For GET requests, return immediately to test
+    if (event.httpMethod === 'GET') {
+        return {
+            statusCode: 200,
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ message: 'GET works' }),
+        };
+    }
+
     return new Promise((resolve) => {
         // Build the request URL
         const queryString = event.queryStringParameters

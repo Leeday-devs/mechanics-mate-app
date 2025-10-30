@@ -29,7 +29,7 @@
     "firebase": "^12.4.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "serverless-http": "^4.0.0",
+    "serverless-http": "^3.2.0",
     "stripe": "^19.1.0"
   }
 }

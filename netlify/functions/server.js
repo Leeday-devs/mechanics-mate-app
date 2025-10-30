@@ -491,11 +491,11 @@ app.get('/api/health', apiLimiter, (req, res) => {
     res.json({ status: 'ok', message: 'My Mechanic API is running' });
 });
 
-// Export app for Netlify Functions, or start server locally
-if (process.env.NETLIFY || process.env.CONTEXT === 'production') {
-    // Just export the app - let the netlify function wrap it
-    module.exports = app;
-} else {
+// Always export the app for Netlify Functions
+module.exports = app;
+
+// Only start listening locally (not in Netlify)
+if (!process.env.NETLIFY && process.env.CONTEXT !== 'production') {
     app.listen(PORT, () => {
         console.log(`My Mechanic server running on http://localhost:${PORT}`);
         console.log(`API endpoint: http://localhost:${PORT}/api/chat`);

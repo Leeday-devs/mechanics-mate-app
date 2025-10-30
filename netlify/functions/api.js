@@ -1,122 +1,82 @@
 const app = require('./server.js');
-const { Readable } = require('stream');
+const http = require('http');
 
-console.log('[API] Module loaded. app type:', typeof app, 'app keys:', Object.keys(app || {}).slice(0, 5));
+// Create a persistent HTTP server that we'll use for all requests
+const server = http.createServer(app);
 
-// Direct Netlify Function handler for Express app
-// Avoids serverless-http's framework detection issues
+// Netlify Function handler for Express app
+// Uses Node.js http module to properly run Express
 exports.handler = async (event, context) => {
     console.log(`[Handler] ${event.httpMethod} ${event.path}`);
 
     return new Promise((resolve) => {
-        // Build full URL
+        // Build the request URL
         const queryString = event.queryStringParameters
             ? '?' + new URLSearchParams(event.queryStringParameters).toString()
             : '';
         const url = event.path + queryString;
 
-        // Create a readable stream for the body
+        // Prepare request body
         const body = event.isBase64Encoded
-            ? Buffer.from(event.body || '', 'base64')
+            ? Buffer.from(event.body || '', 'base64').toString()
             : (event.body || '');
 
-        // Create mock Node.js request object
-        const mockRequest = new Readable({
-            read() {}
-        });
-
-        if (body) {
-            mockRequest.push(body);
-        }
-        mockRequest.push(null);
-
-        // Copy headers
-        mockRequest.headers = {
+        // Create a fake request/response using the http module
+        const fakeReq = new http.IncomingMessage(null);
+        fakeReq.method = event.httpMethod;
+        fakeReq.url = url;
+        fakeReq.httpVersion = '1.1';
+        fakeReq.headers = {
             ...event.headers,
-            'content-length': body?.length || '0',
+            'content-length': Buffer.byteLength(body),
+        };
+        fakeReq.socket = {
+            remoteAddress: event.requestContext?.identity?.sourceIp || '127.0.0.1',
+            destroy() {},
         };
 
-        // Set request properties
-        mockRequest.method = event.httpMethod;
-        mockRequest.url = url;
-
-        // Create mock response object with proper Express compatibility
-        let statusCode = 200;
-        const responseHeaders = {};
+        // Create a fake response
         const chunks = [];
-        let isEnded = false;
+        const fakeRes = new http.ServerResponse(fakeReq);
 
-        const mockResponse = {
-            statusCode: 200,
-            headers: responseHeaders,
-            headersSent: false,
-            write(chunk, encoding) {
-                if (!isEnded && chunk) {
-                    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf8') : chunk);
-                }
-                return true;
-            },
-            end(chunk, encoding) {
-                if (isEnded) return this;
-                isEnded = true;
+        const originalEnd = fakeRes.end.bind(fakeRes);
+        fakeRes.end = function(chunk, encoding) {
+            if (chunk) {
+                chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf-8') : chunk);
+            }
 
-                if (chunk) {
-                    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf8') : chunk);
-                }
+            const body = Buffer.concat(chunks).toString('utf-8');
+            console.log(`[Response] Status: ${fakeRes.statusCode}, Headers:`, Object.keys(fakeRes.getHeaders()));
 
-                const body = chunks.length > 0
-                    ? Buffer.concat(chunks).toString('utf-8')
-                    : '';
+            resolve({
+                statusCode: fakeRes.statusCode || 200,
+                headers: fakeRes.getHeaders(),
+                body: body,
+                isBase64Encoded: false,
+            });
 
-                resolve({
-                    statusCode: this.statusCode || 200,
-                    headers: this.headers || {},
-                    body: body,
-                    isBase64Encoded: false,
-                });
+            return fakeRes;
+        };
 
-                return this;
-            },
-            setHeader(name, value) {
-                if (name && value !== undefined && value !== null) {
-                    this.headers[name.toLowerCase()] = value;
-                }
-                return this;
-            },
-            getHeader(name) {
-                return this.headers && this.headers[name.toLowerCase ? name.toLowerCase() : name];
-            },
-            removeHeader(name) {
-                if (this.headers && name) {
-                    delete this.headers[name.toLowerCase()];
-                }
-                return this;
-            },
-            hasHeader(name) {
-                return this.headers && !!this.headers[name.toLowerCase ? name.toLowerCase() : name];
-            },
-            status(code) {
-                this.statusCode = code;
-                return this;
-            },
-            json(obj) {
-                this.setHeader('content-type', 'application/json');
-                return this.end(JSON.stringify(obj));
-            },
-            send(data) {
-                if (typeof data === 'object' && data !== null) {
-                    this.setHeader('content-type', 'application/json');
-                    return this.end(JSON.stringify(data));
-                }
-                return this.end(data);
-            },
+        const originalWrite = fakeRes.write.bind(fakeRes);
+        fakeRes.write = function(chunk, encoding) {
+            if (chunk) {
+                chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf-8') : chunk);
+            }
+            return true;
         };
 
         try {
-            // Call the Express app
-            app(mockRequest, mockResponse);
+            // Start the request
+            if (body) {
+                fakeReq.push(body);
+            }
+            fakeReq.push(null);
+
+            // Call Express app
+            app(fakeReq, fakeRes);
         } catch (error) {
-            console.error('Error calling Express app:', error);
+            console.error('[Handler] Error:', error);
             resolve({
                 statusCode: 500,
                 headers: { 'content-type': 'application/json' },

@@ -493,13 +493,8 @@ app.get('/api/health', apiLimiter, (req, res) => {
 
 // Export app for Netlify Functions, or start server locally
 if (process.env.NETLIFY || process.env.CONTEXT === 'production') {
+    // Just export the app - let the netlify function wrap it
     module.exports = app;
-    module.exports.handler = require('serverless-http')(app, {
-        request: (request) => {
-            // Add request path/method logging
-            console.log(`[Serverless] ${request.method} ${request.url}`);
-        }
-    });
 } else {
     app.listen(PORT, () => {
         console.log(`My Mechanic server running on http://localhost:${PORT}`);

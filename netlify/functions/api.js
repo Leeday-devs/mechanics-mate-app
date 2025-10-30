@@ -1,4 +1,6 @@
-const app = require('./server.js');
+// Load the Express app from the root server.js instead of the copied one
+// This avoids the listen() issue
+const app = require('../../server.js');
 const { EventEmitter } = require('events');
 const { Readable } = require('stream');
 
@@ -182,10 +184,17 @@ exports.handler = async (event, context) => {
 
         try {
             // Call Express app
+            console.log('[Handler] About to call app with:', {
+                method: fakeReq.method,
+                url: fakeReq.url,
+                headers: Object.keys(fakeReq.headers),
+                isStream: fakeReq instanceof Readable,
+                bodyLength: body.length
+            });
             app(fakeReq, fakeRes);
         } catch (error) {
             clearTimeout(timeout);
-            console.error('[Handler] Synchronous error:', error);
+            console.error('[Handler] Synchronous error:', error.message, error.stack);
             if (!isEnded) {
                 resolve({
                     statusCode: 500,

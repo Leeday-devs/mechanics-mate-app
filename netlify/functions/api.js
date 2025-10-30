@@ -40,34 +40,60 @@ exports.handler = async (event, context) => {
         mockRequest.method = event.httpMethod;
         mockRequest.url = url;
 
-        // Create mock response object
+        // Create mock response object with proper Express compatibility
         let statusCode = 200;
         const responseHeaders = {};
         const chunks = [];
+        let isEnded = false;
 
         const mockResponse = {
-            statusCode,
+            statusCode: 200,
             headers: responseHeaders,
-            write(chunk) {
-                if (chunk) chunks.push(chunk);
+            headersSent: false,
+            write(chunk, encoding) {
+                if (!isEnded && chunk) {
+                    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf8') : chunk);
+                }
                 return true;
             },
-            end(chunk) {
-                if (chunk) chunks.push(chunk);
+            end(chunk, encoding) {
+                if (isEnded) return this;
+                isEnded = true;
 
-                const body = Buffer.concat(chunks).toString('utf-8');
+                if (chunk) {
+                    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf8') : chunk);
+                }
+
+                const body = chunks.length > 0
+                    ? Buffer.concat(chunks).toString('utf-8')
+                    : '';
+
                 resolve({
-                    statusCode: this.statusCode,
-                    headers: this.headers,
+                    statusCode: this.statusCode || 200,
+                    headers: this.headers || {},
                     body: body,
                     isBase64Encoded: false,
                 });
+
+                return this;
             },
             setHeader(name, value) {
-                this.headers[name.toLowerCase()] = value;
+                if (name && value !== undefined && value !== null) {
+                    this.headers[name.toLowerCase()] = value;
+                }
+                return this;
             },
             getHeader(name) {
-                return this.headers[name.toLowerCase()];
+                return this.headers && this.headers[name.toLowerCase ? name.toLowerCase() : name];
+            },
+            removeHeader(name) {
+                if (this.headers && name) {
+                    delete this.headers[name.toLowerCase()];
+                }
+                return this;
+            },
+            hasHeader(name) {
+                return this.headers && !!this.headers[name.toLowerCase ? name.toLowerCase() : name];
             },
             status(code) {
                 this.statusCode = code;
@@ -75,17 +101,16 @@ exports.handler = async (event, context) => {
             },
             json(obj) {
                 this.setHeader('content-type', 'application/json');
-                this.end(JSON.stringify(obj));
+                return this.end(JSON.stringify(obj));
             },
             send(data) {
-                this.end(data);
+                if (typeof data === 'object' && data !== null) {
+                    this.setHeader('content-type', 'application/json');
+                    return this.end(JSON.stringify(data));
+                }
+                return this.end(data);
             },
         };
-
-        Object.defineProperty(mockResponse, 'statusCode', {
-            get() { return statusCode; },
-            set(value) { statusCode = value; },
-        });
 
         try {
             // Call the Express app

@@ -271,6 +271,7 @@ async function searchForums(vehicleInfo, userQuestion) {
 
 // Chat endpoint - now requires authentication and active subscription
 app.post('/api/chat', chatLimiter, authenticateToken, requireSubscription, async (req, res) => {
+    console.error('🚀 CHAT ENDPOINT REACHED');
     try {
         const { message, conversationHistory = [] } = req.body;
         const userId = req.user.id;

@@ -334,4 +334,167 @@ router.delete('/cleanup', authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
+/**
+ * Get dashboard logs (logins, auth errors, subscription events)
+ * GET /api/logs/dashboard?type=all&from=2025-10-23&to=2025-10-30&search=email
+ * Returns auth/login logs with stats
+ */
+router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const logType = req.query.type || 'all';
+        const dateFrom = req.query.from || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const dateTo = req.query.to || new Date().toISOString().split('T')[0];
+        const searchEmail = req.query.search || '';
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 500);
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const offset = (page - 1) * limit;
+
+        // Build base query for login/auth logs from auth logs table
+        let query = supabaseAdmin
+            .from('auth_logs')
+            .select('*', { count: 'exact' });
+
+        // Filter by type
+        if (logType !== 'all') {
+            const typeMap = {
+                'login': 'success',
+                'auth_error': 'failure',
+                'subscription': 'subscription'
+            };
+            const logStatus = typeMap[logType];
+            if (logStatus === 'subscription') {
+                // This would be a different table, but we'll include in comments
+                // For now, filter based on what we have
+            } else {
+                query = query.eq('success', logStatus === 'success');
+            }
+        }
+
+        // Filter by email
+        if (searchEmail) {
+            query = query.ilike('email', `%${searchEmail}%`);
+        }
+
+        // Filter by date range
+        if (dateFrom) {
+            query = query.gte('created_at', `${dateFrom}T00:00:00Z`);
+        }
+        if (dateTo) {
+            query = query.lte('created_at', `${dateTo}T23:59:59Z`);
+        }
+
+        // Get logs
+        const { data: logs, count, error } = await query
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
+
+        if (error) {
+            throw error;
+        }
+
+        // Get stats
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+        // Total logins in 7 days
+        const { count: totalLogins } = await supabaseAdmin
+            .from('auth_logs')
+            .select('*', { count: 'exact' })
+            .eq('success', true)
+            .gte('created_at', sevenDaysAgo);
+
+        // Total errors in 7 days
+        const { count: totalErrors } = await supabaseAdmin
+            .from('auth_logs')
+            .select('*', { count: 'exact' })
+            .eq('success', false)
+            .gte('created_at', sevenDaysAgo);
+
+        // Active users in 24h
+        const { data: activeUsersData } = await supabaseAdmin
+            .from('auth_logs')
+            .select('email', { distinct: true })
+            .gte('created_at', twentyFourHoursAgo)
+            .eq('success', true);
+
+        const activeUsers = activeUsersData ? new Set(activeUsersData.map(d => d.email)).size : 0;
+
+        // Calculate success rate
+        const totalLoginAttempts = (totalLogins || 0) + (totalErrors || 0);
+        const successRate = totalLoginAttempts > 0 ? Math.round(((totalLogins || 0) / totalLoginAttempts) * 100) : 0;
+
+        res.json({
+            logs: logs.map(log => ({
+                timestamp: log.created_at,
+                email: log.email,
+                type: log.success ? 'login' : 'auth_error',
+                success: log.success,
+                errorCode: log.error_code || null,
+                message: log.error_message || log.reason || null
+            })),
+            stats: {
+                totalLogins: totalLogins || 0,
+                totalErrors: totalErrors || 0,
+                successRate,
+                activeUsers
+            },
+            pagination: {
+                page,
+                limit,
+                total: count,
+                totalPages: Math.ceil(count / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Get dashboard logs error:', error);
+        logger.logError({
+            userId: req.user.id,
+            title: 'Failed to fetch dashboard logs',
+            message: error.message,
+            endpoint: '/api/logs/dashboard',
+            method: 'GET',
+            statusCode: 500
+        }).catch(() => {});
+
+        res.status(500).json({ error: 'Error fetching dashboard logs' });
+    }
+});
+
+/**
+ * Log an authentication error (public endpoint)
+ * POST /api/logs/error
+ */
+router.post('/error', async (req, res) => {
+    try {
+        const { type, errorType, code, message } = req.body;
+
+        // Validate input
+        if (!type || !errorType) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Log to application logs table
+        const { error } = await supabaseAdmin
+            .from('application_logs')
+            .insert({
+                log_type: type,
+                severity: 'warning',
+                title: `Auth Error: ${errorType}`,
+                message: message || 'No details provided',
+                user_agent: req.get('user-agent'),
+                error_code: code
+            });
+
+        if (error) {
+            console.warn('Error logging to application_logs:', error);
+            // Don't fail the response, just log the error
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Log error endpoint error:', error);
+        res.status(500).json({ error: 'Failed to log error' });
+    }
+});
+
 module.exports = router;

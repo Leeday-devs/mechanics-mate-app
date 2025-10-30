@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Error - My Mechanic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .error-code {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .error-message {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .error-details {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        .error-details p {
+            color: #555;
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .error-details p:last-child {
+            margin-bottom: 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .support-info {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 13px;
+        }
+
+        .support-info p {
+            margin-bottom: 10px;
+        }
+
+        .support-email {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .support-email:hover {
+            text-decoration: underline;
+        }
+
+        .error-type {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #ffe0e0;
+            color: #d32f2f;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .tips {
+            background: #f0f7ff;
+            border: 1px solid #e0e8ff;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .tips h3 {
+            color: #667eea;
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .tips ul {
+            list-style: none;
+            color: #555;
+            font-size: 13px;
+        }
+
+        .tips li {
+            margin-bottom: 6px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .tips li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tips li:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">🔐</div>
+
+        <div class="error-type" id="errorType">Authentication Error</div>
+
+        <h1>Access Denied</h1>
+        <p class="error-code" id="errorCode">AUTH_ERROR</p>
+
+        <p class="error-message" id="errorMessage">
+            Your session has expired or you don't have permission to access this resource.
+            Please log in again to continue.
+        </p>
+
+        <div class="tips">
+            <h3>What can you do?</h3>
+            <ul>
+                <li>Try logging in again with your email and password</li>
+                <li>Make sure you have an active subscription</li>
+                <li>Check that your account is verified</li>
+                <li>Clear your browser cache and cookies if issues persist</li>
+            </ul>
+        </div>
+
+        <div class="error-details" id="errorDetails" style="display: none;">
+            <p id="errorDetailText"></p>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="goToLogin()">Log In Again</button>
+            <button class="btn btn-secondary" onclick="goHome()">Back to Home</button>
+        </div>
+
+        <div class="support-info">
+            <p>Still having trouble?</p>
+            <p>
+                <a href="mailto:support@mechanics-mate.app" class="support-email">
+                    Contact Support
+                </a>
+            </p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                Error Code: <span id="fullErrorCode" style="font-family: monospace;">AUTH_ERROR</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Parse error from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorType = urlParams.get('type') || 'auth';
+        const errorMessage = urlParams.get('message') || 'Authentication failed. Please try again.';
+        const errorCode = urlParams.get('code') || 'AUTH_ERROR';
+        const showDetails = urlParams.get('details') === 'true';
+
+        // Map error types to user-friendly messages
+        const errorMap = {
+            'invalid_token': {
+                title: 'Invalid Session',
+                message: 'Your session token is invalid or has expired. Please log in again.',
+                type: 'Invalid Token',
+                tips: ['Log in with your email and password', 'Make sure you\'re using the correct account']
+            },
+            'expired_token': {
+                title: 'Session Expired',
+                message: 'Your session has expired for security reasons. Please log in again to continue.',
+                type: 'Session Expired',
+                tips: ['This is normal - sessions expire after 7 days', 'Simply log in again to get a new session']
+            },
+            'no_subscription': {
+                title: 'No Active Subscription',
+                message: 'You need an active subscription to use the chat feature. Please upgrade your plan.',
+                type: 'Subscription Required',
+                tips: ['Choose a pricing plan that suits your needs', 'Subscriptions come with a 7-day free trial']
+            },
+            'csrf_token': {
+                title: 'Security Check Failed',
+                message: 'A security validation failed. Please try refreshing the page and logging in again.',
+                type: 'Security Error',
+                tips: ['Refresh the page', 'Make sure cookies are enabled in your browser']
+            },
+            'server_error': {
+                title: 'Server Error',
+                message: 'Something went wrong on our end. Please try again in a few moments.',
+                type: 'Server Error',
+                tips: ['Try again in a few moments', 'Check our status page for any ongoing issues']
+            }
+        };
+
+        function updateErrorDisplay() {
+            const errorInfo = errorMap[errorType] || {
+                title: 'Authentication Error',
+                message: errorMessage,
+                type: 'Error',
+                tips: ['Try logging in again', 'Contact support if the problem persists']
+            };
+
+            // Update UI
+            document.querySelector('h1').textContent = errorInfo.title;
+            document.getElementById('errorMessage').textContent = errorInfo.message;
+            document.getElementById('errorCode').textContent = errorInfo.type.toUpperCase().replace(/ /g, '_');
+            document.getElementById('errorType').textContent = errorInfo.type;
+            document.getElementById('fullErrorCode').textContent = errorCode;
+
+            // Update tips
+            const tipsList = document.querySelector('.tips ul');
+            tipsList.innerHTML = '';
+            errorInfo.tips.forEach(tip => {
+                const li = document.createElement('li');
+                li.textContent = tip;
+                tipsList.appendChild(li);
+            });
+
+            // Show error details if requested (for development/debugging)
+            if (showDetails && errorMessage) {
+                const errorDetailsDiv = document.getElementById('errorDetails');
+                document.getElementById('errorDetailText').textContent = `Details: ${errorMessage}`;
+                errorDetailsDiv.style.display = 'block';
+            }
+        }
+
+        function goToLogin() {
+            // Store the current page to redirect back after login
+            const returnUrl = sessionStorage.getItem('returnUrl') || '/chat';
+            localStorage.setItem('postLoginRedirect', returnUrl);
+            window.location.href = '/login.html';
+        }
+
+        function goHome() {
+            window.location.href = '/';
+        }
+
+        // Log the error for monitoring
+        function logErrorEvent() {
+            try {
+                const errorEvent = {
+                    type: 'auth_error',
+                    errorType: errorType,
+                    code: errorCode,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    url: window.location.href
+                };
+
+                // Send to monitoring endpoint (optional)
+                fetch('/api/logs/error', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(errorEvent)
+                }).catch(err => console.error('Failed to log error:', err));
+            } catch (error) {
+                console.error('Error logging event:', error);
+            }
+        }
+
+        // Initialize
+        updateErrorDisplay();
+        logErrorEvent();
+    </script>
+</body>
+</html>

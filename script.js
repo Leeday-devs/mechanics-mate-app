@@ -547,13 +547,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorMessage = '🔐 You need to log in to use the chat.\n\nPlease log in with your email and password to get started.';
                 setTimeout(() => {
                     localStorage.removeItem('authToken');
-                    window.location.href = '/login.html';
+                    const errorPageUrl = '/auth-error.html?type=invalid_token&code=NO_TOKEN&message=' + encodeURIComponent('No authentication token found');
+                    window.location.href = errorPageUrl;
                 }, 2000);
-            } else if (error.message.includes('Invalid or expired token') || error.message.includes('Token has been revoked')) {
+            } else if (error.message.includes('Invalid or expired token')) {
                 errorMessage = '🔐 Your session has expired. Please log in again.';
                 setTimeout(() => {
                     localStorage.removeItem('authToken');
-                    window.location.href = '/login.html';
+                    const errorPageUrl = '/auth-error.html?type=expired_token&code=EXPIRED_TOKEN&message=' + encodeURIComponent('Your session token has expired. Please log in again.');
+                    window.location.href = errorPageUrl;
+                }, 2000);
+            } else if (error.message.includes('Token has been revoked')) {
+                errorMessage = '🔐 Your session has been revoked. Please log in again.';
+                setTimeout(() => {
+                    localStorage.removeItem('authToken');
+                    const errorPageUrl = '/auth-error.html?type=invalid_token&code=TOKEN_REVOKED&message=' + encodeURIComponent('Your session token has been revoked. Please log in again.');
+                    window.location.href = errorPageUrl;
                 }, 2000);
             } else if (error.message.includes('quota exceeded')) {
                 errorMessage = '📊 Monthly message quota exceeded! Please upgrade your plan or wait until next month.';
@@ -567,12 +576,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorMessage = '🔐 You need to be logged in to use this feature. Please log in and try again.';
                 setTimeout(() => {
                     localStorage.removeItem('authToken');
-                    window.location.href = '/login.html';
+                    const errorPageUrl = '/auth-error.html?type=invalid_token&code=UNAUTHORIZED&message=' + encodeURIComponent('Unauthorized access. Please log in again.');
+                    window.location.href = errorPageUrl;
                 }, 2000);
             } else if (error.message.includes('subscription required') || error.message.includes('Active subscription required')) {
                 errorMessage = '💳 Active subscription required. Please subscribe to continue chatting and accessing vehicle-specific advice.';
                 setTimeout(() => {
-                    window.location.href = '/pricing.html';
+                    const errorPageUrl = '/auth-error.html?type=no_subscription&code=NO_SUBSCRIPTION&message=' + encodeURIComponent('You need an active subscription to use the chat feature.');
+                    window.location.href = errorPageUrl;
                 }, 2000);
             } else if (error.message.includes('503')) {
                 errorMessage += 'The service is temporarily unavailable. Please try again in a moment.';

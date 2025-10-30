@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Logs Dashboard - My Mechanic</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card.error {
+            border-left-color: #d32f2f;
+        }
+
+        .stat-card.error .stat-value {
+            color: #d32f2f;
+        }
+
+        .stat-card.success {
+            border-left-color: #388e3c;
+        }
+
+        .stat-card.success .stat-value {
+            color: #388e3c;
+        }
+
+        .logs-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: #f9f9f9;
+            border-bottom: 2px solid #eee;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .status-success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-error {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .status-warning {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .timestamp {
+            color: #999;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .email {
+            color: #667eea;
+            text-decoration: none;
+            font-family: monospace;
+        }
+
+        .error-code {
+            background: #f5f5f5;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading:after {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .pagination button {
+            min-width: 40px;
+            padding: 8px 10px;
+            background: #ddd;
+            color: #333;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .filter-active {
+            background: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #667eea;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .filter-active button {
+            background: transparent;
+            color: #667eea;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 10px;
+            padding: 0;
+        }
+
+        .filter-active button:hover {
+            text-decoration: underline;
+        }
+
+        .export-btn {
+            background: #388e3c;
+            margin-left: auto;
+        }
+
+        .export-btn:hover {
+            background: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Admin Logs Dashboard</h1>
+        <p>Monitor authentication, logins, and error logs from customers</p>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <div class="control-group">
+                <label for="logType">Log Type:</label>
+                <select id="logType" onchange="loadLogs()">
+                    <option value="all">All Logs</option>
+                    <option value="login">Logins</option>
+                    <option value="auth_error">Auth Errors</option>
+                    <option value="subscription">Subscription</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="dateRange">Date Range:</label>
+                <input type="date" id="dateFrom">
+                <input type="date" id="dateTo">
+            </div>
+
+            <div class="control-group">
+                <input type="text" id="searchEmail" placeholder="Search by email...">
+            </div>
+
+            <button onclick="loadLogs()">Search</button>
+            <button class="export-btn" onclick="exportLogs()">📥 Export CSV</button>
+        </div>
+
+        <div class="stats" id="statsContainer">
+            <div class="stat-card">
+                <div class="stat-label">Total Logins (7d)</div>
+                <div class="stat-value" id="totalLogins">-</div>
+            </div>
+            <div class="stat-card error">
+                <div class="stat-label">Auth Errors (7d)</div>
+                <div class="stat-value" id="totalErrors">-</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-label">Success Rate</div>
+                <div class="stat-value" id="successRate">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Users (24h)</div>
+                <div class="stat-value" id="activeUsers">-</div>
+            </div>
+        </div>
+
+        <div id="filterActive"></div>
+
+        <div class="logs-table">
+            <div id="logsContainer" class="loading">Loading logs...</div>
+        </div>
+
+        <div class="pagination" id="paginationContainer" style="display: none;"></div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let allLogs = [];
+
+        async function loadLogs() {
+            try {
+                const logType = document.getElementById('logType').value;
+                const dateFrom = document.getElementById('dateFrom').value;
+                const dateTo = document.getElementById('dateTo').value;
+                const searchEmail = document.getElementById('searchEmail').value;
+
+                document.getElementById('logsContainer').innerHTML = '<div class="loading">Loading logs...</div>';
+
+                const params = new URLSearchParams({
+                    type: logType || 'all',
+                    from: dateFrom || '',
+                    to: dateTo || '',
+                    search: searchEmail || '',
+                    page: currentPage,
+                    limit: 50
+                });
+
+                const response = await fetch(`/api/logs?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        showError('You do not have admin access to view logs.');
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                allLogs = data.logs || [];
+                totalPages = data.totalPages || 1;
+
+                updateStats(data.stats);
+                renderLogs(allLogs);
+                renderPagination();
+                updateFilterDisplay();
+
+            } catch (error) {
+                showError(`Failed to load logs: ${error.message}`);
+            }
+        }
+
+        function updateStats(stats) {
+            if (!stats) return;
+
+            document.getElementById('totalLogins').textContent = stats.totalLogins || '0';
+            document.getElementById('totalErrors').textContent = stats.totalErrors || '0';
+            document.getElementById('successRate').textContent = stats.successRate + '%' || '0%';
+            document.getElementById('activeUsers').textContent = stats.activeUsers || '0';
+        }
+
+        function renderLogs(logs) {
+            if (logs.length === 0) {
+                document.getElementById('logsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>No logs found matching your filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Email</th>
+                            <th>Event</th>
+                            <th>Status</th>
+                            <th>Error Code</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${logs.map(log => `
+                            <tr>
+                                <td class="timestamp">${new Date(log.timestamp).toLocaleString()}</td>
+                                <td><span class="email">${log.email || 'N/A'}</span></td>
+                                <td>${getEventLabel(log.type)}</td>
+                                <td>
+                                    <span class="status-badge status-${log.success ? 'success' : 'error'}">
+                                        ${log.success ? '✓ Success' : '✗ Failed'}
+                                    </span>
+                                </td>
+                                <td>
+                                    ${log.errorCode ? `<span class="error-code">${log.errorCode}</span>` : '-'}
+                                </td>
+                                <td>${log.message || log.reason || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('logsContainer').innerHTML = html;
+        }
+
+        function getEventLabel(type) {
+            const labels = {
+                'login': '🔑 Login',
+                'auth_error': '❌ Auth Error',
+                'subscription': '💳 Subscription',
+                'chat': '💬 Chat',
+                'logout': '🚪 Logout'
+            };
+            return labels[type] || type;
+        }
+
+        function renderPagination() {
+            if (totalPages <= 1) {
+                document.getElementById('paginationContainer').style.display = 'none';
+                return;
+            }
+
+            const container = document.getElementById('paginationContainer');
+            container.style.display = 'flex';
+            container.innerHTML = '';
+
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { currentPage--; loadLogs(); };
+            container.appendChild(prevBtn);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages && i <= 5; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                if (i === currentPage) btn.classList.add('active');
+                btn.onclick = () => { currentPage = i; loadLogs(); };
+                container.appendChild(btn);
+            }
+
+            if (totalPages > 5) {
+                const dots = document.createElement('span');
+                dots.textContent = '...';
+                dots.style.padding = '8px 10px';
+                container.appendChild(dots);
+
+                const lastBtn = document.createElement('button');
+                lastBtn.textContent = totalPages;
+                if (totalPages === currentPage) lastBtn.classList.add('active');
+                lastBtn.onclick = () => { currentPage = totalPages; loadLogs(); };
+                container.appendChild(lastBtn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next →';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { currentPage++; loadLogs(); };
+            container.appendChild(nextBtn);
+        }
+
+        function updateFilterDisplay() {
+            const logType = document.getElementById('logType').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const searchEmail = document.getElementById('searchEmail').value;
+
+            const hasFilters = logType !== 'all' || dateFrom || dateTo || searchEmail;
+
+            if (hasFilters) {
+                const filterText = [
+                    logType !== 'all' ? `Type: ${logType}` : '',
+                    dateFrom ? `From: ${dateFrom}` : '',
+                    dateTo ? `To: ${dateTo}` : '',
+                    searchEmail ? `Email: ${searchEmail}` : ''
+                ].filter(Boolean).join(' | ');
+
+                document.getElementById('filterActive').innerHTML = `
+                    <div class="filter-active">
+                        ${filterText}
+                        <button onclick="clearFilters()">Clear</button>
+                    </div>
+                `;
+            } else {
+                document.getElementById('filterActive').innerHTML = '';
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('logType').value = 'all';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            document.getElementById('searchEmail').value = '';
+            currentPage = 1;
+            loadLogs();
+        }
+
+        function exportLogs() {
+            if (allLogs.length === 0) {
+                alert('No logs to export. Try adjusting your filters.');
+                return;
+            }
+
+            const csv = [
+                ['Timestamp', 'Email', 'Event', 'Status', 'Error Code', 'Details'].join(','),
+                ...allLogs.map(log => [
+                    new Date(log.timestamp).toISOString(),
+                    log.email || '',
+                    log.type || '',
+                    log.success ? 'Success' : 'Failed',
+                    log.errorCode || '',
+                    (log.message || log.reason || '').replace(/,/g, ';')
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `logs-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        function showError(message) {
+            document.getElementById('logsContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Load logs on page load
+        window.addEventListener('load', () => {
+            // Set default date range to last 7 days
+            const today = new Date();
+            const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            document.getElementById('dateTo').valueAsDate = today;
+            document.getElementById('dateFrom').valueAsDate = sevenDaysAgo;
+
+            loadLogs();
+        });
+
+        // Refresh logs every 30 seconds
+        setInterval(loadLogs, 30000);
+    </script>
+</body>
+</html>

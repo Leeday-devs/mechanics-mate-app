@@ -3,10 +3,9 @@ const app = require('../../server.js');
 
 // Create serverless handler
 const handler = serverless(app, {
-    // Pass through headers correctly
-    basePath: '/api',
+    // Don't strip basePath since Netlify handles routing
+    basePath: '',
     binary: ['*/*'],
-    requestId: (event) => event.requestContext?.requestId || 'offline',
 });
 
 // Wrap the handler to add error handling

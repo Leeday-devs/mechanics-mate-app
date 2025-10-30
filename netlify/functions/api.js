@@ -46,19 +46,29 @@ exports.handler = async (event, context) => {
             }
 
             const body = Buffer.concat(chunks).toString('utf-8');
-            const headers = fakeRes.getHeaders();
-            console.log(`[Response] Status: ${fakeRes.statusCode}, Headers:`, Object.keys(headers));
 
-            // Convert header values to strings (Netlify doesn't support arrays)
+            // Get all headers and normalize them
             const normalizedHeaders = {};
-            for (const [key, value] of Object.entries(headers || {})) {
-                if (Array.isArray(value)) {
-                    // For multi-value headers like set-cookie, join with comma (or keep first for cookies)
-                    normalizedHeaders[key] = value[0]; // Take first value for now
+            const headers = fakeRes.getHeaders();
+
+            // Also add raw headers
+            const rawHeaders = fakeRes.getRawHeaders ? fakeRes.getRawHeaders() : [];
+            for (let i = 0; i < rawHeaders.length; i += 2) {
+                const name = rawHeaders[i];
+                const value = rawHeaders[i + 1];
+
+                // Normalize header names to lowercase
+                const lowerName = typeof name === 'string' ? name.toLowerCase() : name;
+
+                // For multi-value headers, take the first value or join
+                if (normalizedHeaders[lowerName]) {
+                    // Header already exists, skip (keep first value)
                 } else {
-                    normalizedHeaders[key] = value;
+                    normalizedHeaders[lowerName] = value;
                 }
             }
+
+            console.log(`[Response] Status: ${fakeRes.statusCode}, Headers:`, Object.keys(normalizedHeaders));
 
             resolve({
                 statusCode: fakeRes.statusCode || 200,

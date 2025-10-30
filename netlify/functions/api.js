@@ -6,14 +6,21 @@ const { Readable } = require('stream');
 exports.handler = async (event, context) => {
     console.log(`[Handler] ${event.httpMethod} ${event.path}`);
 
-    // For GET requests, return immediately to test
-    if (event.httpMethod === 'GET') {
+    // For non-POST requests, handle with serverless-http approach
+    if (event.httpMethod !== 'POST') {
         return {
             statusCode: 200,
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ message: 'GET works' }),
         };
     }
+
+    // For POST, return a simple test message for now
+    return {
+        statusCode: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ message: 'POST handler test' }),
+    };
 
     return new Promise((resolve) => {
         // Build the request URL

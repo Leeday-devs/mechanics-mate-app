@@ -1,9 +1,8 @@
 const app = require('./server.js');
-const http = require('http');
+const { EventEmitter } = require('events');
 const { Readable } = require('stream');
 
 // Netlify Function handler for Express app
-// Uses Node.js http module to properly run Express
 exports.handler = async (event, context) => {
     console.log(`[Handler] ${event.httpMethod} ${event.path}`);
 
@@ -26,77 +25,117 @@ exports.handler = async (event, context) => {
         }
         bodyStream.push(null);
 
-        // Create a fake request/response using the http module
-        const fakeReq = new http.IncomingMessage(bodyStream);
-        fakeReq.method = event.httpMethod;
-        fakeReq.url = url;
-        fakeReq.httpVersion = '1.1';
-        fakeReq.headers = {
-            ...event.headers,
-            'content-length': Buffer.byteLength(body),
-        };
-        fakeReq.socket = {
-            remoteAddress: event.requestContext?.identity?.sourceIp || '127.0.0.1',
-            destroy() {},
-        };
+        // Create a mock request object that is a Readable stream with Express properties
+        const fakeReq = Object.assign(bodyStream, {
+            method: event.httpMethod,
+            url: url,
+            httpVersion: '1.1',
+            httpVersionMajor: 1,
+            httpVersionMinor: 1,
+            headers: {
+                ...event.headers,
+                'content-length': Buffer.byteLength(body),
+            },
+            socket: {
+                remoteAddress: event.requestContext?.identity?.sourceIp || '127.0.0.1',
+                destroy() {},
+            },
+        });
 
-        // Create a fake response
+        // Create a mock response object
         const chunks = [];
-        const fakeRes = new http.ServerResponse(fakeReq);
+        let isEnded = false;
 
-        const originalEnd = fakeRes.end.bind(fakeRes);
-        fakeRes.end = function(chunk, encoding) {
-            if (chunk) {
-                chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf-8') : chunk);
-            }
+        const fakeRes = Object.assign(new EventEmitter(), {
+            statusCode: 200,
+            headers: {},
+            headersSent: false,
+            finished: false,
 
-            const body = Buffer.concat(chunks).toString('utf-8');
-
-            // Get all headers and normalize them
-            const normalizedHeaders = {};
-            const headers = fakeRes.getHeaders();
-
-            // Also add raw headers
-            const rawHeaders = fakeRes.getRawHeaders ? fakeRes.getRawHeaders() : [];
-            for (let i = 0; i < rawHeaders.length; i += 2) {
-                const name = rawHeaders[i];
-                const value = rawHeaders[i + 1];
-
-                // Normalize header names to lowercase
-                const lowerName = typeof name === 'string' ? name.toLowerCase() : name;
-
-                // For multi-value headers, take the first value or join
-                if (normalizedHeaders[lowerName]) {
-                    // Header already exists, skip (keep first value)
-                } else {
-                    normalizedHeaders[lowerName] = value;
+            write(chunk, encoding) {
+                if (chunk && !isEnded) {
+                    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf-8') : chunk);
                 }
-            }
+                return true;
+            },
 
-            console.log(`[Response] Status: ${fakeRes.statusCode}, Headers:`, Object.keys(normalizedHeaders));
+            end(chunk, encoding) {
+                if (isEnded) return this;
+                isEnded = true;
 
-            resolve({
-                statusCode: fakeRes.statusCode || 200,
-                headers: normalizedHeaders,
-                body: body,
-                isBase64Encoded: false,
-            });
+                if (chunk) {
+                    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf-8') : chunk);
+                }
 
-            return fakeRes;
-        };
+                const body = chunks.length > 0 ? Buffer.concat(chunks).toString('utf-8') : '';
 
-        const originalWrite = fakeRes.write.bind(fakeRes);
-        fakeRes.write = function(chunk, encoding) {
-            if (chunk) {
-                chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, encoding || 'utf-8') : chunk);
-            }
-            return true;
-        };
+                // Get headers and normalize them
+                const normalizedHeaders = {};
+                for (const [key, value] of Object.entries(this.headers || {})) {
+                    const lowerKey = key.toLowerCase();
+                    // Keep only first value for multi-value headers
+                    if (!normalizedHeaders[lowerKey]) {
+                        normalizedHeaders[lowerKey] = Array.isArray(value) ? value[0] : value;
+                    }
+                }
+
+                console.log(`[Response] Status: ${this.statusCode}, Headers:`, Object.keys(normalizedHeaders));
+
+                resolve({
+                    statusCode: this.statusCode || 200,
+                    headers: normalizedHeaders,
+                    body: body,
+                    isBase64Encoded: false,
+                });
+
+                return this;
+            },
+
+            setHeader(name, value) {
+                if (name && value !== undefined && value !== null) {
+                    this.headers[name.toLowerCase()] = value;
+                }
+                return this;
+            },
+
+            getHeader(name) {
+                return this.headers && this.headers[name.toLowerCase && name.toLowerCase ? name.toLowerCase() : name];
+            },
+
+            removeHeader(name) {
+                if (this.headers && name) {
+                    delete this.headers[name.toLowerCase && name.toLowerCase ? name.toLowerCase() : name];
+                }
+                return this;
+            },
+
+            hasHeader(name) {
+                return !!(this.headers && this.headers[name.toLowerCase && name.toLowerCase ? name.toLowerCase() : name]);
+            },
+
+            status(code) {
+                this.statusCode = code;
+                return this;
+            },
+
+            json(obj) {
+                this.setHeader('content-type', 'application/json');
+                return this.end(JSON.stringify(obj));
+            },
+
+            send(data) {
+                if (typeof data === 'object' && data !== null) {
+                    this.setHeader('content-type', 'application/json');
+                    return this.end(JSON.stringify(data));
+                }
+                return this.end(data);
+            },
+        });
 
         // Set a timeout to prevent hanging requests
         const timeout = setTimeout(() => {
             console.error('[Handler] Request timeout');
-            if (!fakeRes.headersSent) {
+            if (!isEnded) {
                 resolve({
                     statusCode: 504,
                     headers: { 'content-type': 'application/json' },
@@ -109,7 +148,7 @@ exports.handler = async (event, context) => {
         fakeRes.on('error', (error) => {
             clearTimeout(timeout);
             console.error('[Handler] Response error:', error);
-            if (!fakeRes.headersSent) {
+            if (!isEnded) {
                 resolve({
                     statusCode: 500,
                     headers: { 'content-type': 'application/json' },
@@ -122,7 +161,7 @@ exports.handler = async (event, context) => {
         fakeReq.on('error', (error) => {
             clearTimeout(timeout);
             console.error('[Handler] Request error:', error);
-            if (!fakeRes.headersSent) {
+            if (!isEnded) {
                 resolve({
                     statusCode: 400,
                     headers: { 'content-type': 'application/json' },
@@ -133,16 +172,17 @@ exports.handler = async (event, context) => {
 
         try {
             // Call Express app
-            // The body has already been pushed to bodyStream, so don't push again
             app(fakeReq, fakeRes);
         } catch (error) {
             clearTimeout(timeout);
             console.error('[Handler] Synchronous error:', error);
-            resolve({
-                statusCode: 500,
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ error: 'Internal Server Error', message: error.message }),
-            });
+            if (!isEnded) {
+                resolve({
+                    statusCode: 500,
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ error: 'Internal Server Error', message: error.message }),
+                });
+            }
         }
     });
 };

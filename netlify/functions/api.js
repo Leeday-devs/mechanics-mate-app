@@ -46,11 +46,23 @@ exports.handler = async (event, context) => {
             }
 
             const body = Buffer.concat(chunks).toString('utf-8');
-            console.log(`[Response] Status: ${fakeRes.statusCode}, Headers:`, Object.keys(fakeRes.getHeaders()));
+            const headers = fakeRes.getHeaders();
+            console.log(`[Response] Status: ${fakeRes.statusCode}, Headers:`, Object.keys(headers));
+
+            // Convert header values to strings (Netlify doesn't support arrays)
+            const normalizedHeaders = {};
+            for (const [key, value] of Object.entries(headers || {})) {
+                if (Array.isArray(value)) {
+                    // For multi-value headers like set-cookie, join with comma (or keep first for cookies)
+                    normalizedHeaders[key] = value[0]; // Take first value for now
+                } else {
+                    normalizedHeaders[key] = value;
+                }
+            }
 
             resolve({
                 statusCode: fakeRes.statusCode || 200,
-                headers: fakeRes.getHeaders(),
+                headers: normalizedHeaders,
                 body: body,
                 isBase64Encoded: false,
             });

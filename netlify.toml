@@ -36,6 +36,16 @@
   status = 200
 
 [[redirects]]
+  from = "/admin-logs"
+  to = "/admin-logs.html"
+  status = 200
+
+[[redirects]]
+  from = "/auth-error"
+  to = "/auth-error.html"
+  status = 200
+
+[[redirects]]
   from = "/pricing"
   to = "/pricing.html"
   status = 200

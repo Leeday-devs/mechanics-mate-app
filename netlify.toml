@@ -74,7 +74,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["express", "cors", "helmet", "cookie-parser", "csurf", "@supabase/supabase-js", "jsonwebtoken", "express-rate-limit", "dotenv", "axios", "@anthropic-ai/sdk", "@sentry/node", "@sentry/integrations", "bcryptjs", "express-validator", "stripe", "serverless-http", "@sendgrid/mail", "firebase"]
+  external_node_modules = ["express", "cors", "helmet", "cookie-parser", "csurf", "@supabase/supabase-js", "jsonwebtoken", "express-rate-limit", "dotenv", "axios", "@anthropic-ai/sdk", "@sentry/node", "@sentry/integrations", "bcryptjs", "express-validator", "stripe", "@sendgrid/mail", "firebase"]
 
 [[headers]]
   for = "/*"

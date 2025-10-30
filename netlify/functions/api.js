@@ -132,13 +132,8 @@ exports.handler = async (event, context) => {
         });
 
         try {
-            // Start the request
-            if (body) {
-                fakeReq.push(body);
-            }
-            fakeReq.push(null);
-
             // Call Express app
+            // The body has already been pushed to bodyStream, so don't push again
             app(fakeReq, fakeRes);
         } catch (error) {
             clearTimeout(timeout);

@@ -116,14 +116,14 @@ if (uniquePriceIds.size !== priceIds.length) {
 console.log('✅ Environment validation passed');
 
 // Import routes and middleware
-const authRoutes = require('./routes/auth');
-const subscriptionRoutes = require('./routes/subscriptions');
-const adminRoutes = require('./routes/admin');
-const logsRoutes = require('./routes/logs');
-const { authenticateToken, requireSubscription } = require('./middleware/auth');
-const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./middleware/logger');
-const { checkQuota, incrementQuota, logMessage } = require('./utils/quota');
-const logger = require('./lib/logger');
+const authRoutes = require('./src/routes/auth');
+const subscriptionRoutes = require('./src/routes/subscriptions');
+const adminRoutes = require('./src/routes/admin');
+const logsRoutes = require('./src/routes/logs');
+const { authenticateToken, requireSubscription } = require('./src/middleware/auth');
+const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./src/middleware/logger');
+const { checkQuota, incrementQuota, logMessage } = require('./src/utils/quota');
+const logger = require('./src/lib/logger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -206,16 +206,16 @@ const path = require('path');
 
 // Landing page at root
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'landing.html'));
+    res.sendFile(path.join(__dirname, 'public/landing.html'));
 });
 
 // Chat interface (previously index.html)
 app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 app.get('/app', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 // Mount API routes
@@ -225,7 +225,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/logs', logsRoutes); // Comprehensive logging endpoints
 
 // Serve static files AFTER route handlers to prevent index.html from overriding root
-app.use(express.static('.', { index: false })); // Disable auto-serving index.html
+app.use(express.static('./public', { index: false })); // Serve from public directory
+app.use(express.static('.', { index: false })); // Also serve root level for backwards compatibility
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({

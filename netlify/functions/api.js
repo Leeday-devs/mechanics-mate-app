@@ -3,8 +3,9 @@ const app = require('../../server.js');
 
 // Create serverless handler
 const handler = serverless(app, {
-    // Don't strip basePath since Netlify handles routing
-    basePath: '',
+    // Set basePath to /api since Netlify routes /api/* to this function
+    // but the Express routes are defined under /api prefix
+    basePath: '/api',
     binary: ['*/*'],
 });
 
@@ -13,15 +14,8 @@ exports.handler = async (event, context) => {
     console.log(`[Netlify] Method:${event.httpMethod} Path:${event.path} RawPath:${event.rawPath}`);
 
     try {
-        // Remove leading /api if present since serverless-http will handle routing
-        const pathToUse = event.path.startsWith('/api/') ? event.path.substring(4) : event.path;
-        const modifiedEvent = {
-            ...event,
-            path: pathToUse,
-            rawPath: pathToUse,
-        };
-
-        const response = await handler(modifiedEvent, context);
+        // serverless-http needs the full path including /api
+        const response = await handler(event, context);
         console.log(`[Response] Status: ${response.statusCode}`);
         return response;
     } catch (error) {

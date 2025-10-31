@@ -30,10 +30,10 @@ const csrfProtection = csrf({
 // ============================================
 const signupValidation = [
     body('email')
-        .isEmail()
         .trim()
-        .normalizeEmail()
-        .withMessage('Valid email is required'),
+        .isEmail()
+        .withMessage('Valid email is required')
+        .normalizeEmail(),
     body('password')
         .isLength({ min: 8 })
         .withMessage('Password must be at least 8 characters'),
@@ -46,10 +46,10 @@ const signupValidation = [
 
 const loginValidation = [
     body('email')
-        .isEmail()
         .trim()
-        .normalizeEmail()
-        .withMessage('Valid email is required'),
+        .isEmail()
+        .withMessage('Valid email is required')
+        .normalizeEmail(),
     body('password')
         .notEmpty()
         .withMessage('Password is required')

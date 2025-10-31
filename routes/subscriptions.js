@@ -7,6 +7,44 @@ const logger = require('../lib/logger');
 
 const router = express.Router();
 
+// ============================================
+// CHECK SUBSCRIPTION STATUS (for loading page)
+// ============================================
+// Get current subscription status - used while loading after payment
+router.get('/status', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Get user's subscription
+        const { data: subscription, error } = await supabaseAdmin
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', userId)
+            .in('status', ['active', 'trialing', 'incomplete'])
+            .single();
+
+        if (error || !subscription) {
+            return res.status(404).json({
+                error: 'No active subscription found',
+                subscription: null
+            });
+        }
+
+        res.json({
+            subscription: {
+                id: subscription.id,
+                plan_id: subscription.plan_id,
+                status: subscription.status,
+                current_period_start: subscription.current_period_start,
+                current_period_end: subscription.current_period_end
+            }
+        });
+    } catch (error) {
+        console.error('Subscription status check error:', error);
+        res.status(500).json({ error: 'Error checking subscription' });
+    }
+});
+
 // Create Stripe checkout session
 router.post('/create-checkout', authenticateToken, async (req, res) => {
     try {
@@ -61,7 +99,7 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
                 }
             ],
             mode: 'subscription',
-            success_url: `${req.headers.origin || 'http://localhost:3000'}/dashboard.html?success=true`,
+            success_url: `${req.headers.origin || 'http://localhost:3000'}/loading.html?success=true`,
             cancel_url: `${req.headers.origin || 'http://localhost:3000'}/pricing.html?canceled=true`,
             metadata: {
                 user_id: userId,

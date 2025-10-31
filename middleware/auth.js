@@ -76,12 +76,16 @@ async function requireSubscription(req, res, next) {
     try {
         const userId = req.user.id;
 
-        // Get user's subscription (accept active, trialing, or incomplete)
+        // Get user's subscription (accept pending, active, trialing, or incomplete)
+        // pending = subscription record created during checkout, waiting for webhook
+        // active = subscription confirmed by webhook
+        // trialing = free trial
+        // incomplete = payment in progress
         const { data: subscription, error } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
             .eq('user_id', userId)
-            .in('status', ['active', 'trialing', 'incomplete'])
+            .in('status', ['pending', 'active', 'trialing', 'incomplete'])
             .single();
 
         if (error || !subscription) {

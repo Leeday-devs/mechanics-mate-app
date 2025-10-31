@@ -352,10 +352,10 @@
         // Check if coming from Stripe checkout
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('success') === 'true') {
-            // Payment successful - redirecting to dashboard
-            showError('✅ Payment successful! Redirecting to dashboard...');
+            // Payment successful - redirecting to loading page to sync subscription
+            showError('✅ Payment successful! Setting up your account...');
             setTimeout(() => {
-                window.location.href = '/dashboard.html';
+                window.location.href = '/loading.html';
             }, 2000);
         } else if (urlParams.get('canceled') === 'true') {
             // Payment was canceled

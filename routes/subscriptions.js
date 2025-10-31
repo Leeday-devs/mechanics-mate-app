@@ -15,20 +15,22 @@ router.get('/status', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // Get user's subscription
-        const { data: subscription, error } = await supabaseAdmin
+        // Get user's subscription (include 'pending' status which is set during checkout)
+        const { data: subscriptions, error } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
             .eq('user_id', userId)
-            .in('status', ['active', 'trialing', 'incomplete'])
-            .single();
+            .in('status', ['pending', 'active', 'trialing', 'incomplete']);
 
-        if (error || !subscription) {
+        if (error || !subscriptions || subscriptions.length === 0) {
             return res.status(404).json({
-                error: 'No active subscription found',
+                error: 'No subscription found',
                 subscription: null
             });
         }
+
+        // Return the first subscription (most recent)
+        const subscription = subscriptions[0];
 
         res.json({
             subscription: {
@@ -70,15 +72,19 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
 
         // Create or get Stripe customer
         let customerId;
-        const { data: subscription } = await supabaseAdmin
+        let subscriptionId;
+        const { data: existingSubscription } = await supabaseAdmin
             .from('subscriptions')
-            .select('stripe_customer_id')
+            .select('*')
             .eq('user_id', userId)
-            .single();
+            .not('status', 'eq', 'canceled');
 
-        if (subscription?.stripe_customer_id) {
-            customerId = subscription.stripe_customer_id;
+        if (existingSubscription && existingSubscription.length > 0) {
+            // Use existing subscription record
+            customerId = existingSubscription[0].stripe_customer_id;
+            subscriptionId = existingSubscription[0].id;
         } else {
+            // Create new Stripe customer
             const customer = await stripe.customers.create({
                 email: userEmail,
                 metadata: {
@@ -86,6 +92,23 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
                 }
             });
             customerId = customer.id;
+
+            // Create subscription record with 'pending' status
+            // This ensures the subscription exists while waiting for webhook
+            const { data: newSub } = await supabaseAdmin
+                .from('subscriptions')
+                .insert({
+                    user_id: userId,
+                    stripe_customer_id: customerId,
+                    plan_id: planId,
+                    status: 'pending' // Temporary status until webhook confirms
+                })
+                .select()
+                .single();
+
+            if (newSub) {
+                subscriptionId = newSub.id;
+            }
         }
 
         // Create checkout session

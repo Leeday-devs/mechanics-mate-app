@@ -281,12 +281,16 @@
                 const data = await response.json();
 
                 if (response.ok && data.subscription) {
-                    // Subscription found!
-                    showSuccess();
-                    setTimeout(() => {
-                        window.location.href = '/dashboard.html';
-                    }, 1500);
-                    return;
+                    const sub = data.subscription;
+                    // Accept 'pending', 'active', 'trialing', or 'incomplete' status
+                    if (['pending', 'active', 'trialing', 'incomplete'].includes(sub.status)) {
+                        // Subscription found!
+                        showSuccess();
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 1500);
+                        return;
+                    }
                 }
 
                 // Subscription not found yet, retry

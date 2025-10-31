@@ -376,19 +376,37 @@ async function handleSubscriptionUpdate(subscription) {
         console.error('[Webhook] Error fetching existing subscription:', fetchError);
     }
 
+    // Build the subscription data with safe date handling
+    const subscriptionData = {
+        stripe_subscription_id: subscriptionId,
+        plan_id: planId,
+        status: status,
+        cancel_at_period_end: subscription.cancel_at_period_end
+    };
+
+    // Only add dates if they exist and are valid
+    if (subscription.current_period_start) {
+        try {
+            subscriptionData.current_period_start = new Date(subscription.current_period_start * 1000).toISOString();
+        } catch (e) {
+            console.warn('[Webhook] Could not parse current_period_start:', subscription.current_period_start);
+        }
+    }
+
+    if (subscription.current_period_end) {
+        try {
+            subscriptionData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString();
+        } catch (e) {
+            console.warn('[Webhook] Could not parse current_period_end:', subscription.current_period_end);
+        }
+    }
+
     if (existingSubscription) {
         // Update the existing subscription record
         console.log('[Webhook] Updating existing subscription:', existingSubscription.id);
         const { error: updateError } = await supabaseAdmin
             .from('subscriptions')
-            .update({
-                stripe_subscription_id: subscriptionId,
-                plan_id: planId,
-                status: status,
-                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                cancel_at_period_end: subscription.cancel_at_period_end
-            })
+            .update(subscriptionData)
             .eq('id', existingSubscription.id);
 
         if (updateError) {
@@ -403,12 +421,7 @@ async function handleSubscriptionUpdate(subscription) {
             .insert({
                 user_id: userId,
                 stripe_customer_id: customerId,
-                stripe_subscription_id: subscriptionId,
-                plan_id: planId,
-                status: status,
-                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                cancel_at_period_end: subscription.cancel_at_period_end
+                ...subscriptionData
             });
 
         if (insertError) {

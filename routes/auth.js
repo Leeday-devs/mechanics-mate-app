@@ -9,6 +9,7 @@ const { authenticateToken } = require('../middleware/auth');
 const logger = require('../lib/logger');
 const emailVerification = require('../utils/emailVerification');
 const emailService = require('../utils/emailService');
+const { getBaseUrl } = require('../utils/urlConfig');
 
 const router = express.Router();
 
@@ -137,11 +138,8 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
         );
 
         // Generate verification link
-        // Use environment variable for production URL, fallback to request headers
-        let baseUrl = process.env.APP_URL || process.env.SITE_URL;
-        if (!baseUrl) {
-            baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-        }
+        // Use environment-aware base URL (production uses SITE_URL, dev uses APP_URL)
+        const baseUrl = getBaseUrl(req);
         const verificationLink = emailVerification.generateVerificationLink(verificationToken, baseUrl);
 
         // Send verification email (fire and forget - don't block response)
@@ -422,11 +420,8 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
         const token = await emailVerification.createVerificationToken(userId, userEmail);
 
         // Generate verification link
-        // Use environment variable for production URL, fallback to request headers
-        let baseUrl = process.env.APP_URL || process.env.SITE_URL;
-        if (!baseUrl) {
-            baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-        }
+        // Use environment-aware base URL (production uses SITE_URL, dev uses APP_URL)
+        const baseUrl = getBaseUrl(req);
         const verificationLink = emailVerification.generateVerificationLink(token, baseUrl);
 
         // Send verification email

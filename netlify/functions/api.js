@@ -13,14 +13,7 @@ exports.handler = async (event, context) => {
     console.log(`[Netlify] ${event.httpMethod} ${event.path}`);
 
     try {
-        // Netlify strips /api from the path when routing to functions/api
-        // We need to add it back for Express to route correctly
-        const modifiedEvent = {
-            ...event,
-            path: '/api' + event.path,
-        };
-
-        const response = await handler(modifiedEvent, context);
+        const response = await handler(event, context);
         console.log(`[Response] Status: ${response.statusCode}`);
         return response;
     } catch (error) {

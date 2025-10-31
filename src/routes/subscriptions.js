@@ -355,21 +355,67 @@ async function handleSubscriptionUpdate(subscription) {
         planId = Object.keys(PLAN_PRICES).find(key => PLAN_PRICES[key] === priceId) || 'starter';
     }
 
-    // Upsert subscription
-    await supabaseAdmin
+    console.log('[Webhook] Processing subscription update:', {
+        customerId,
+        subscriptionId,
+        userId,
+        status,
+        planId
+    });
+
+    // First, find the existing subscription record by user_id and customer_id
+    const { data: existingSubscription, error: fetchError } = await supabaseAdmin
         .from('subscriptions')
-        .upsert({
-            user_id: userId,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            plan_id: planId,
-            status: status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end
-        }, {
-            onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .eq('stripe_customer_id', customerId)
+        .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 means "No rows found"
+        console.error('[Webhook] Error fetching existing subscription:', fetchError);
+    }
+
+    if (existingSubscription) {
+        // Update the existing subscription record
+        console.log('[Webhook] Updating existing subscription:', existingSubscription.id);
+        const { error: updateError } = await supabaseAdmin
+            .from('subscriptions')
+            .update({
+                stripe_subscription_id: subscriptionId,
+                plan_id: planId,
+                status: status,
+                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                cancel_at_period_end: subscription.cancel_at_period_end
+            })
+            .eq('id', existingSubscription.id);
+
+        if (updateError) {
+            console.error('[Webhook] Failed to update subscription:', updateError);
+            throw updateError;
+        }
+    } else {
+        // Create new subscription record if it doesn't exist
+        console.log('[Webhook] Creating new subscription');
+        const { error: insertError } = await supabaseAdmin
+            .from('subscriptions')
+            .insert({
+                user_id: userId,
+                stripe_customer_id: customerId,
+                stripe_subscription_id: subscriptionId,
+                plan_id: planId,
+                status: status,
+                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                cancel_at_period_end: subscription.cancel_at_period_end
+            });
+
+        if (insertError) {
+            console.error('[Webhook] Failed to create subscription:', insertError);
+            throw insertError;
+        }
+    }
 
     // Log subscription update
     logger.logSubscription({
@@ -380,7 +426,7 @@ async function handleSubscriptionUpdate(subscription) {
         message: `Subscription updated to ${status} for plan: ${planId}`
     }).catch(err => console.error('Failed to log subscription update:', err));
 
-    console.log('Subscription updated for user:', userId);
+    console.log('[Webhook] Subscription successfully processed for user:', userId);
 }
 
 // Handle subscription deletion

@@ -3,9 +3,8 @@ const app = require('../../server.js');
 
 // Create serverless handler
 const handler = serverless(app, {
-    // Set basePath to /api since Netlify routes /api/* to this function
-    // but the Express routes are defined under /api prefix
-    basePath: '/api',
+    // Don't use basePath - our Express routes already include /api prefix
+    basePath: '',
     binary: ['*/*'],
 });
 

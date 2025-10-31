@@ -137,7 +137,11 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
         );
 
         // Generate verification link
-        const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+        // Use environment variable for production URL, fallback to request headers
+        let baseUrl = process.env.APP_URL || process.env.SITE_URL;
+        if (!baseUrl) {
+            baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+        }
         const verificationLink = emailVerification.generateVerificationLink(verificationToken, baseUrl);
 
         // Send verification email (fire and forget - don't block response)
@@ -418,7 +422,11 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
         const token = await emailVerification.createVerificationToken(userId, userEmail);
 
         // Generate verification link
-        const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+        // Use environment variable for production URL, fallback to request headers
+        let baseUrl = process.env.APP_URL || process.env.SITE_URL;
+        if (!baseUrl) {
+            baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
+        }
         const verificationLink = emailVerification.generateVerificationLink(token, baseUrl);
 
         // Send verification email

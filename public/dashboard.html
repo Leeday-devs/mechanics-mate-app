@@ -456,8 +456,9 @@
                     console.log('[Dashboard] User is admin');
                 }
 
-                // Check subscription (accept active, trialing, or incomplete)
-                const validStatuses = ['active', 'trialing', 'incomplete'];
+                // Check subscription (accept pending, active, trialing, or incomplete)
+                // 'pending' status means payment is being processed but webhook hasn't arrived yet
+                const validStatuses = ['pending', 'active', 'trialing', 'incomplete'];
                 console.log('[Dashboard] Checking subscription...');
                 console.log('[Dashboard] Subscription exists:', !!data.subscription);
                 if (data.subscription) {

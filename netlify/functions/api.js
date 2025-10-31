@@ -10,10 +10,18 @@ const handler = serverless(app, {
 
 // Wrap the handler to add error handling
 exports.handler = async (event, context) => {
-    console.log(`[Netlify] ${event.httpMethod} ${event.path}`);
+    console.log(`[Netlify] Method:${event.httpMethod} Path:${event.path} RawPath:${event.rawPath}`);
 
     try {
-        const response = await handler(event, context);
+        // Remove leading /api if present since serverless-http will handle routing
+        const pathToUse = event.path.startsWith('/api/') ? event.path.substring(4) : event.path;
+        const modifiedEvent = {
+            ...event,
+            path: pathToUse,
+            rawPath: pathToUse,
+        };
+
+        const response = await handler(modifiedEvent, context);
         console.log(`[Response] Status: ${response.statusCode}`);
         return response;
     } catch (error) {

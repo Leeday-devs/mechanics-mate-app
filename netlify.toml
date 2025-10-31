@@ -3,6 +3,11 @@
   functions = "netlify/functions"
   publish = "."
 
+# Environment variables for production
+[build.environment]
+  SITE_URL = "https://mechanics-mate.netlify.app"
+  APP_URL = "https://mechanics-mate.netlify.app"
+
 [[redirects]]
   from = "http://*"
   to = "https://:splat"

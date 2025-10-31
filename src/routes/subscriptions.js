@@ -95,7 +95,9 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
 
             // Create subscription record with 'pending' status
             // This ensures the subscription exists while waiting for webhook
-            const { data: newSub } = await supabaseAdmin
+            console.log('[Checkout] Creating subscription record:', { userId, customerId, planId });
+
+            const { data: newSub, error: subError } = await supabaseAdmin
                 .from('subscriptions')
                 .insert({
                     user_id: userId,
@@ -106,8 +108,17 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
                 .select()
                 .single();
 
+            if (subError) {
+                console.error('[Checkout] Failed to create subscription:', subError);
+                throw new Error(`Failed to create subscription record: ${subError.message}`);
+            }
+
             if (newSub) {
+                console.log('[Checkout] Subscription created successfully:', newSub.id);
                 subscriptionId = newSub.id;
+            } else {
+                console.error('[Checkout] Subscription insert returned no data');
+                throw new Error('Subscription record was not created');
             }
         }
 

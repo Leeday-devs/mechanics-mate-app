@@ -52,7 +52,7 @@ Stores subscription information for each user, linked to Stripe.
 | `stripe_customer_id`     | `TEXT`             | NOT NULL                  | Stripe customer ID                             |
 | `stripe_subscription_id` | `TEXT`             | NOT NULL                  | Stripe subscription ID                         |
 | `plan_id`                | `TEXT`             | NOT NULL                  | Plan type: 'starter', 'professional', 'workshop' |
-| `status`                 | `TEXT`             | NOT NULL                  | Subscription status: 'active', 'canceled', 'past_due', 'trialing' |
+| `status`                 | `TEXT`             | NOT NULL                  | Subscription status: 'pending', 'active', 'canceled', 'past_due', 'trialing', 'incomplete' |
 | `current_period_start`   | `TIMESTAMPTZ`      | NOT NULL                  | Start of current billing period                |
 | `current_period_end`     | `TIMESTAMPTZ`      | NOT NULL                  | End of current billing period                  |
 | `cancel_at_period_end`   | `BOOLEAN`          | DEFAULT false             | Whether subscription cancels at period end     |
@@ -66,7 +66,8 @@ Stores subscription information for each user, linked to Stripe.
 - `user_id` is UNIQUE, ensuring one subscription per user
 - Subscription updates are handled via Stripe webhooks
 - `plan_id` values: 'starter', 'professional', 'workshop'
-- `status` values: 'active', 'canceled', 'past_due', 'trialing', 'incomplete'
+- `status` values: 'pending', 'active', 'canceled', 'past_due', 'trialing', 'incomplete'
+- 'pending' = subscription created but payment not yet confirmed by Stripe webhook
 
 ---
 
@@ -163,7 +164,7 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
     stripe_customer_id TEXT NOT NULL,
     stripe_subscription_id TEXT NOT NULL,
     plan_id TEXT NOT NULL CHECK (plan_id IN ('starter', 'professional', 'workshop')),
-    status TEXT NOT NULL CHECK (status IN ('active', 'canceled', 'past_due', 'trialing', 'incomplete')),
+    status TEXT NOT NULL CHECK (status IN ('pending', 'active', 'canceled', 'past_due', 'trialing', 'incomplete')),
     current_period_start TIMESTAMPTZ NOT NULL,
     current_period_end TIMESTAMPTZ NOT NULL,
     cancel_at_period_end BOOLEAN DEFAULT false,

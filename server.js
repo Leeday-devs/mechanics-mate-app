@@ -53,8 +53,8 @@ if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
 // ============================================
 // ENVIRONMENT VALIDATION
 // ============================================
-const requiredEnvVars = [
-    'ANTHROPIC_API_KEY',
+// CRITICAL variables that MUST be set (without these, auth/payments won't work)
+const criticalEnvVars = [
     'SUPABASE_URL',
     'SUPABASE_ANON_KEY',
     'SUPABASE_SERVICE_ROLE_KEY',
@@ -64,29 +64,43 @@ const requiredEnvVars = [
     'JWT_SECRET'
 ];
 
+// OPTIONAL variables that enhance functionality but aren't required for basic operation
+const optionalEnvVars = [
+    'ANTHROPIC_API_KEY'
+];
+
+const allEnvVars = [...criticalEnvVars, ...optionalEnvVars];
+
 // Debug: Log what variables we actually have
 console.log('🔍 Checking environment variables...');
 console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'NOT SET'}`);
-requiredEnvVars.forEach(varName => {
+allEnvVars.forEach(varName => {
     const value = process.env[varName];
     const status = value ? '✅' : '❌';
     const display = value ? value.substring(0, 20) + '...' : 'MISSING';
-    console.log(`   ${status} ${varName}: ${display}`);
+    const isOptional = optionalEnvVars.includes(varName) ? ' (optional)' : '';
+    console.log(`   ${status} ${varName}${isOptional}: ${display}`);
 });
 
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-if (missingVars.length > 0) {
-    console.error('\n❌ CRITICAL: Missing required environment variables:');
-    missingVars.forEach(varName => console.error(`   - ${varName}`));
-    console.error('\n⚠️  Environment variables status:');
-    console.error(`   Total required: ${requiredEnvVars.length}`);
-    console.error(`   Found: ${requiredEnvVars.length - missingVars.length}`);
-    console.error(`   Missing: ${missingVars.length}`);
+// Check for MISSING CRITICAL variables (will cause crash)
+const missingCriticalVars = criticalEnvVars.filter(varName => !process.env[varName]);
+if (missingCriticalVars.length > 0) {
+    console.error('\n❌ CRITICAL: Missing REQUIRED environment variables:');
+    missingCriticalVars.forEach(varName => console.error(`   - ${varName}`));
+    console.error('\n⚠️  Server startup blocked - these variables are essential!');
     console.error('\nPlease check your .env file or environment variables are set.');
     process.exit(1);
 }
 
-console.log('✅ All required environment variables are set!\n');
+// Check for MISSING OPTIONAL variables (will warn but continue)
+const missingOptionalVars = optionalEnvVars.filter(varName => !process.env[varName]);
+if (missingOptionalVars.length > 0) {
+    console.warn('\n⚠️  WARNING: Missing optional environment variables:');
+    missingOptionalVars.forEach(varName => console.warn(`   - ${varName} (features using this will be disabled)`));
+    console.warn('\nServer will start but some features may not work properly.\n');
+}
+
+console.log('✅ All critical environment variables are set - server ready to start!\n');
 
 // CRITICAL: Warn if using live Stripe keys in development
 if (process.env.NODE_ENV !== 'production' && process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')) {

@@ -5,11 +5,22 @@ const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const fs = require('fs');
+const path = require('path');
 
-// Load .env file ONLY in development mode
+// Load .env file ONLY if it exists AND we're in development
 // In production (Railway), environment variables come from the container/dashboard
-if (process.env.NODE_ENV !== 'production') {
+const envPath = path.join(__dirname, '.env');
+const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+const envFileExists = fs.existsSync(envPath);
+
+if (isDev && envFileExists) {
     require('dotenv').config();
+    console.log('📝 Loaded .env file for development');
+} else if (isDev) {
+    console.log('⚠️  No .env file found, using environment variables only');
+} else {
+    console.log('🚀 Production mode - using container environment variables');
 }
 
 // ============================================

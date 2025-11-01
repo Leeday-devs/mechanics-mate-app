@@ -234,8 +234,6 @@ app.use('/api/', securityLoggingMiddleware); // Detect suspicious activity
 app.use('/api/', requestLoggingMiddleware); // Log all API calls
 
 // HTML Page Routes - MUST be defined BEFORE static middleware
-const path = require('path');
-
 // Landing page at root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/landing.html'));

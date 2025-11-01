@@ -13,6 +13,11 @@ require('dotenv').config();
 const Sentry = require("@sentry/node");
 const { CaptureConsole } = require("@sentry/integrations");
 
+// Load .env file in development, but don't fail in production (Railway uses env vars directly)
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
     Sentry.init({
         dsn: process.env.SENTRY_DSN,

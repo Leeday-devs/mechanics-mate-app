@@ -3,7 +3,6 @@ const { supabaseAdmin } = require('../lib/supabase');
 
 // Middleware to verify JWT token
 async function authenticateToken(req, res, next) {
-    console.error('🚨 AUTH MIDDLEWARE CALLED - Auth header:', req.headers['authorization']?.substring(0, 20));
     try {
         // Get token from Authorization header
         const authHeader = req.headers['authorization'];
@@ -15,7 +14,6 @@ async function authenticateToken(req, res, next) {
 
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('🔐 Token verified for user:', decoded.email);
 
         // ============================================
         // CHECK TOKEN BLACKLIST
@@ -43,16 +41,13 @@ async function authenticateToken(req, res, next) {
         }
 
         // Get user from Supabase
-        console.log('📍 Looking up user in Supabase:', decoded.userId);
         const { data: user, error } = await supabaseAdmin.auth.admin.getUserById(decoded.userId);
 
         if (error) {
-            console.error('❌ Supabase error looking up user:', error);
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
 
         if (!user || !user.user) {
-            console.error('❌ User not found in Supabase:', user);
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
 
@@ -63,10 +58,8 @@ async function authenticateToken(req, res, next) {
         };
         req.token = token; // Attach token for logout blacklisting
 
-        console.log('✅ Auth successful for user:', req.user.email);
         next();
     } catch (error) {
-        console.error('❌ Auth middleware error:', error.message);
         return res.status(403).json({ error: 'Invalid or expired token' });
     }
 }

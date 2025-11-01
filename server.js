@@ -5,6 +5,7 @@ const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const { body, validationResult } = require('express-validator');
 const fs = require('fs');
 const path = require('path');
 
@@ -170,6 +171,7 @@ const { authenticateToken, requireSubscription } = require('./src/middleware/aut
 const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./src/middleware/logger');
 const { checkQuota, incrementQuota, logMessage } = require('./src/utils/quota');
 const logger = require('./src/lib/logger');
+const { supabaseAdmin } = require('./src/lib/supabase');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -277,6 +279,18 @@ const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// Validation middleware helper
+const validateRequest = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            error: errors.array()[0].msg,
+            details: errors.array()
+        });
+    }
+    next();
+};
+
 // Function to search UK automotive forums for relevant information
 async function searchForums(vehicleInfo, userQuestion) {
     try {
@@ -315,37 +329,28 @@ async function searchForums(vehicleInfo, userQuestion) {
 }
 
 // Chat endpoint - now requires authentication and active subscription
-app.post('/api/chat', chatLimiter, authenticateToken, requireSubscription, async (req, res) => {
-    console.error('🚀 CHAT ENDPOINT REACHED');
+app.post(
+    '/api/chat',
+    chatLimiter,
+    authenticateToken,
+    requireSubscription,
+    [
+        body('message')
+            .trim()
+            .notEmpty().withMessage('Message is required')
+            .isString().withMessage('Message must be a string')
+            .isLength({ max: 5000 }).withMessage('Message is too long. Maximum length is 5000 characters.'),
+        body('conversationHistory')
+            .optional()
+            .isArray().withMessage('Conversation history must be an array')
+            .custom(arr => arr.length <= 50).withMessage('Conversation history is too long. Please start a new conversation.')
+    ],
+    validateRequest,
+    async (req, res) => {
     try {
         const { message, conversationHistory = [] } = req.body;
         const userId = req.user.id;
         const subscription = req.subscription;
-
-        // Validation
-        if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
-        }
-
-        if (typeof message !== 'string') {
-            return res.status(400).json({ error: 'Message must be a string' });
-        }
-
-        if (message.trim().length === 0) {
-            return res.status(400).json({ error: 'Message cannot be empty' });
-        }
-
-        if (message.length > 5000) {
-            return res.status(400).json({ error: 'Message is too long. Maximum length is 5000 characters.' });
-        }
-
-        if (!Array.isArray(conversationHistory)) {
-            return res.status(400).json({ error: 'Conversation history must be an array' });
-        }
-
-        if (conversationHistory.length > 50) {
-            return res.status(400).json({ error: 'Conversation history is too long. Please start a new conversation.' });
-        }
 
         // Check message quota
         const quotaCheck = await checkQuota(userId, subscription.plan_id);
@@ -381,7 +386,6 @@ app.post('/api/chat', chatLimiter, authenticateToken, requireSubscription, async
         const cleanMessage = message.replace(/\[Vehicle: [^\]]+\]\s*/, '');
 
         // Search forums for relevant discussions
-        console.log('Searching forums for:', vehicleInfo, cleanMessage);
         const forumResults = await searchForums(vehicleInfo, cleanMessage);
 
         // Build forum context for AI
@@ -526,14 +530,72 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
     }
 });
 
+// Global error handler (catches unhandled errors in middleware/routes)
+app.use((err, req, res, next) => {
+    // Log the error
+    logger.logError({
+        userId: req.user?.id,
+        message: err.message,
+        endpoint: req.path,
+        method: req.method,
+        statusCode: err.statusCode || 500
+    }).catch(logErr => console.error('Failed to log error:', logErr));
+
+    // Return user-friendly error response
+    const statusCode = err.statusCode || 500;
+    const errorId = Date.now();
+
+    res.status(statusCode).json({
+        error: process.env.NODE_ENV === 'production'
+            ? 'Internal server error'
+            : err.message,
+        errorId: errorId // For support tickets
+    });
+});
+
 // Attach Sentry error handler (must be after all routes and before Netlify export)
 if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
     app.use(Sentry.Handlers.errorHandler());
 }
 
-// Health check endpoint
-app.get('/api/health', apiLimiter, (req, res) => {
-    res.json({ status: 'ok', message: 'My Mechanic API is running' });
+// Health check endpoint with dependency verification
+app.get('/api/health', apiLimiter, async (req, res) => {
+    try {
+        const checks = {
+            database: false,
+            anthropic: !!process.env.ANTHROPIC_API_KEY,
+            stripe: !!process.env.STRIPE_SECRET_KEY,
+            jwt: !!process.env.JWT_SECRET
+        };
+
+        // Test Supabase connection
+        try {
+            const { data } = await supabaseAdmin.auth.admin.listUsers({ limit: 1 });
+            checks.database = true;
+        } catch (dbError) {
+            console.warn('Database health check failed:', dbError.message);
+            checks.database = false;
+        }
+
+        const allHealthy = Object.values(checks).every(v => v === true);
+        const statusCode = allHealthy ? 200 : 503;
+
+        res.status(statusCode).json({
+            status: allHealthy ? 'ok' : 'degraded',
+            timestamp: new Date().toISOString(),
+            checks,
+            message: allHealthy
+                ? 'My Mechanic API is running with all dependencies'
+                : 'My Mechanic API is running but some dependencies are unavailable'
+        });
+    } catch (error) {
+        console.error('Health check error:', error);
+        res.status(503).json({
+            status: 'error',
+            timestamp: new Date().toISOString(),
+            message: 'Health check failed'
+        });
+    }
 });
 
 // Always export the app for Netlify Functions

@@ -5,18 +5,18 @@ const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();
+
+// Load .env file ONLY in development mode
+// In production (Railway), environment variables come from the container/dashboard
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 // ============================================
 // SENTRY ERROR TRACKING (Production Only)
 // ============================================
 const Sentry = require("@sentry/node");
 const { CaptureConsole } = require("@sentry/integrations");
-
-// Load .env file in development, but don't fail in production (Railway uses env vars directly)
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
 
 if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
     Sentry.init({
@@ -53,13 +53,29 @@ const requiredEnvVars = [
     'JWT_SECRET'
 ];
 
+// Debug: Log what variables we actually have
+console.log('🔍 Checking environment variables...');
+console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'NOT SET'}`);
+requiredEnvVars.forEach(varName => {
+    const value = process.env[varName];
+    const status = value ? '✅' : '❌';
+    const display = value ? value.substring(0, 20) + '...' : 'MISSING';
+    console.log(`   ${status} ${varName}: ${display}`);
+});
+
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingVars.length > 0) {
-    console.error('❌ CRITICAL: Missing required environment variables:');
+    console.error('\n❌ CRITICAL: Missing required environment variables:');
     missingVars.forEach(varName => console.error(`   - ${varName}`));
-    console.error('\nPlease check your .env file and ensure all required variables are set.');
+    console.error('\n⚠️  Environment variables status:');
+    console.error(`   Total required: ${requiredEnvVars.length}`);
+    console.error(`   Found: ${requiredEnvVars.length - missingVars.length}`);
+    console.error(`   Missing: ${missingVars.length}`);
+    console.error('\nPlease check your .env file or environment variables are set.');
     process.exit(1);
 }
+
+console.log('✅ All required environment variables are set!\n');
 
 // CRITICAL: Warn if using live Stripe keys in development
 if (process.env.NODE_ENV !== 'production' && process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')) {

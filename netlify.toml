@@ -1,7 +1,7 @@
 [build]
   command = "npm install && echo 'Build complete'"
   functions = "netlify/functions"
-  publish = "."
+  publish = "public"
 
 # Environment variables for production
 [build.environment]
@@ -17,6 +17,18 @@
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Root to landing page
+[[redirects]]
+  from = "/"
+  to = "/landing.html"
+  status = 200
+
+# Chat page
+[[redirects]]
+  from = "/chat"
+  to = "/index.html"
   status = 200
 
 # Clean URL redirects for multi-page application
@@ -65,17 +77,11 @@
   to = "/terms.html"
   status = 200
 
-# Landing page - serve index.html for root
-[[redirects]]
-  from = "/"
-  to = "/index.html"
-  status = 200
-
-# Fallback for any undefined pages - serve 404
+# Fallback for SPA - serve landing.html for undefined routes (not 404)
 [[redirects]]
   from = "/*"
-  to = "/index.html"
-  status = 404
+  to = "/landing.html"
+  status = 200
 
 [functions]
   node_bundler = "esbuild"

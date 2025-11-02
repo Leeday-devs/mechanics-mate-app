@@ -201,31 +201,13 @@ app.use('/api/', apiLimiter); // Apply rate limiting to all API endpoints
 app.use('/api/', securityLoggingMiddleware); // Detect suspicious activity
 app.use('/api/', requestLoggingMiddleware); // Log all API calls
 
-// HTML Page Routes - MUST be defined BEFORE static middleware
-const path = require('path');
-
-// Landing page at root
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public/landing.html'));
-});
-
-// Chat interface (previously index.html)
-app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public/index.html'));
-});
-
-app.get('/app', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public/index.html'));
-});
-
 // Mount API routes
+// NOTE: Static files are served by Netlify directly from the public/ directory
+// This function only handles API endpoints
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/logs', logsRoutes); // Comprehensive logging endpoints
-
-// Serve static files AFTER route handlers to prevent index.html from overriding root
-app.use(express.static(path.join(__dirname, '../../public'), { index: false })); // Disable auto-serving index.html
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({

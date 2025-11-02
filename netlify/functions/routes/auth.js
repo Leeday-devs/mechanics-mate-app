@@ -278,12 +278,13 @@ router.get('/me', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // Get subscription (accept active, trialing, or incomplete statuses)
+        // Get subscription (accept pending, active, trialing, or incomplete statuses)
+        // 'pending' is included because subscription is created with pending status before webhook arrives
         const { data: subscription } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
             .eq('user_id', userId)
-            .in('status', ['active', 'trialing', 'incomplete'])
+            .in('status', ['pending', 'active', 'trialing', 'incomplete'])
             .single();
 
         // Get usage stats

@@ -3,7 +3,6 @@ const { supabaseAdmin } = require('../lib/supabase');
 
 // Middleware to verify JWT token
 async function authenticateToken(req, res, next) {
-    console.error('🚨 AUTH MIDDLEWARE CALLED - Auth header:', req.headers['authorization']?.substring(0, 20));
     try {
         // Get token from Authorization header
         const authHeader = req.headers['authorization'];
@@ -15,7 +14,6 @@ async function authenticateToken(req, res, next) {
 
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('🔐 Token verified for user:', decoded.email);
 
         // ============================================
         // CHECK TOKEN BLACKLIST
@@ -29,7 +27,9 @@ async function authenticateToken(req, res, next) {
                 .single();
 
             if (blacklistedToken) {
-                console.warn(`⚠️  Attempt to use blacklisted token for user: ${decoded.email}`);
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn(`⚠️  Attempt to use blacklisted token for user: ${decoded.email}`);
+                }
                 return res.status(401).json({
                     error: 'Token has been revoked',
                     code: 'TOKEN_REVOKED'
@@ -38,21 +38,26 @@ async function authenticateToken(req, res, next) {
         } catch (error) {
             // If token_blacklist table doesn't exist yet, log but continue
             if (error.code !== 'PGRST116') { // "not found" error code
-                console.warn('⚠️  Could not check token blacklist:', error.message);
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn('⚠️  Could not check token blacklist:', error.message);
+                }
             }
         }
 
         // Get user from Supabase
-        console.log('📍 Looking up user in Supabase:', decoded.userId);
         const { data: user, error } = await supabaseAdmin.auth.admin.getUserById(decoded.userId);
 
         if (error) {
-            console.error('❌ Supabase error looking up user:', error);
+            if (process.env.NODE_ENV === 'development') {
+                console.error('❌ Supabase error looking up user:', error);
+            }
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
 
         if (!user || !user.user) {
-            console.error('❌ User not found in Supabase:', user);
+            if (process.env.NODE_ENV === 'development') {
+                console.error('❌ User not found in Supabase');
+            }
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
 
@@ -63,10 +68,11 @@ async function authenticateToken(req, res, next) {
         };
         req.token = token; // Attach token for logout blacklisting
 
-        console.log('✅ Auth successful for user:', req.user.email);
         next();
     } catch (error) {
-        console.error('❌ Auth middleware error:', error.message);
+        if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Auth middleware error:', error.message);
+        }
         return res.status(403).json({ error: 'Invalid or expired token' });
     }
 }
@@ -76,12 +82,13 @@ async function requireSubscription(req, res, next) {
     try {
         const userId = req.user.id;
 
-        // Get user's subscription (accept active, trialing, or incomplete)
+        // Get user's subscription (accept pending, active, trialing, or incomplete)
+        // 'pending' is included because subscription is created with pending status before webhook arrives
         const { data: subscription, error } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
             .eq('user_id', userId)
-            .in('status', ['active', 'trialing', 'incomplete'])
+            .in('status', ['pending', 'active', 'trialing', 'incomplete'])
             .single();
 
         if (error || !subscription) {

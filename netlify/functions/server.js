@@ -206,16 +206,16 @@ const path = require('path');
 
 // Landing page at root
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'landing.html'));
+    res.sendFile(path.join(__dirname, '../../public/landing.html'));
 });
 
 // Chat interface (previously index.html)
 app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, '../../public/index.html'));
 });
 
 app.get('/app', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, '../../public/index.html'));
 });
 
 // Mount API routes
@@ -225,7 +225,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/logs', logsRoutes); // Comprehensive logging endpoints
 
 // Serve static files AFTER route handlers to prevent index.html from overriding root
-app.use(express.static('.', { index: false })); // Disable auto-serving index.html
+app.use(express.static(path.join(__dirname, '../../public'), { index: false })); // Disable auto-serving index.html
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({

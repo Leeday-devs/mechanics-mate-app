@@ -19,9 +19,12 @@ const router = express.Router();
 // CSRF protection middleware - use double-submit cookie pattern
 const csrfProtection = csrf({
     cookie: {
+        key: '_csrf',
         httpOnly: process.env.NODE_ENV === 'production', // httpOnly only in production
         secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-        sameSite: 'lax'
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 3600 // 1 hour in seconds
     }
 });
 
@@ -90,7 +93,9 @@ router.get('/csrf-token', csrfProtection, (req, res) => {
     // req.csrfToken() will generate a new token if one doesn't exist,
     // or return the existing one if the cookie already has a value
     const token = req.csrfToken();
-    console.log('[CSRF] Token endpoint called, returning token');
+    console.log('[CSRF] Token endpoint called');
+    console.log('[CSRF] Generated token:', token.substring(0, 20) + '...');
+    console.log('[CSRF] Cookie will be set with key: _csrf');
     res.json({
         csrfToken: token
     });
@@ -99,6 +104,10 @@ router.get('/csrf-token', csrfProtection, (req, res) => {
 // Sign up with email/password
 router.post('/signup', csrfProtection, authLimiter, signupValidation, handleValidationErrors, async (req, res) => {
     try {
+        console.log('[SIGNUP] Request received');
+        console.log('[SIGNUP] CSRF token from header:', req.headers['x-csrf-token']?.substring(0, 20) + '...');
+        console.log('[SIGNUP] Cookie:', req.cookies?._csrf ? 'Present' : 'Missing');
+
         const { email, password, name } = req.body;
 
         if (!email || !password) {

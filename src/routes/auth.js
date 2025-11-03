@@ -138,11 +138,9 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
         );
 
         // ============================================
-        // SEND VERIFICATION EMAIL - TEMPORARILY DISABLED
+        // SEND VERIFICATION EMAIL
         // ============================================
-        // DISABLED 2025-11-02: Supabase email rate limit reached
-        // TODO: RE-ENABLE BEFORE PRODUCTION - See /home/lddevs/PRODUCTION_REMINDERS.md
-        /*
+        // Re-enabled 2025-11-03: Supabase SMTP now configured with SendGrid
         // Create verification token
         const verificationToken = await emailVerification.createVerificationToken(
             authData.user.id,
@@ -175,8 +173,7 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
             emailService.sendWelcomeEmail(email, name)
                 .catch(err => console.warn('Welcome email send failed (non-critical):', err.message));
         }
-        */
-        console.log('⚠️  EMAIL DISABLED: Verification email not sent (rate limit). See PRODUCTION_REMINDERS.md');
+        console.log('✅ Verification email sent to:', email);
 
         res.json({
             success: true,
@@ -186,7 +183,7 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
                 email: authData.user.email,
                 name: authData.user.user_metadata?.name || ''
             },
-            message: 'Account created successfully! You can start using the app immediately.'
+            message: 'Account created successfully! Please check your email to verify your account.'
         });
     } catch (error) {
         console.error('Signup error:', error);
@@ -431,9 +428,7 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
         const userId = req.user.id;
         const userEmail = req.user.email;
 
-        // TEMPORARILY DISABLED 2025-11-02: Supabase email rate limit reached
-        // TODO: RE-ENABLE BEFORE PRODUCTION - See /home/lddevs/PRODUCTION_REMINDERS.md
-        /*
+        // Re-enabled 2025-11-03: Supabase SMTP now configured with SendGrid
         // Create new verification token
         const token = await emailVerification.createVerificationToken(userId, userEmail);
 
@@ -456,19 +451,16 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
                     userId: userId
                 }).catch(logErr => console.error('Failed to log email error:', logErr));
             });
-        */
 
-        console.log('⚠️  EMAIL DISABLED: Resend verification email not sent (rate limit). See PRODUCTION_REMINDERS.md');
+        console.log('✅ Resend verification email sent to:', userEmail);
 
         res.json({
             success: true,
-            message: 'Email sending is temporarily disabled due to rate limits. Your account is still active.',
-            // In development, show the link for testing purposes
-            // verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
+            message: 'Verification email sent! Please check your inbox.',
         });
     } catch (error) {
         console.error('Resend verification error:', error);
-        res.status(500).json({ error: 'Email sending is temporarily disabled' });
+        res.status(500).json({ error: 'Failed to send verification email. Please try again later.' });
     }
 });
 

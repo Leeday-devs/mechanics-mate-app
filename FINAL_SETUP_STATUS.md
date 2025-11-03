@@ -38,7 +38,7 @@ The SendGrid API key is configured, but you must verify the sender email before 
 2. Click "Verify a Single Sender"
 3. Enter:
    - From Name: `Car Mechanic`
-   - From Email: `noreply@car-mechanic.co.uk` (or use `info@car-mechanic.co.uk`)
+   - From Email: `info@car-mechanic.co.uk` (or use `info@car-mechanic.co.uk`)
    - Reply To: Your actual email
 4. Complete the form and click "Create"
 5. Check your email inbox and click the verification link

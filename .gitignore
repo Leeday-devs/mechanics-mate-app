@@ -4,6 +4,8 @@ node_modules/
 # Environment variables
 .env
 SETUP_GUIDE.md
+setup-netlify-env.sh
+NETLIFY_ENV_SETUP.md
 
 # Logs
 logs

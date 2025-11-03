@@ -33,10 +33,10 @@ const csrfProtection = csrf({
 // ============================================
 const signupValidation = [
     body('email')
-        .isEmail()
         .trim()
-        .normalizeEmail()
-        .withMessage('Valid email is required'),
+        .isEmail()
+        .withMessage('Valid email is required')
+        .normalizeEmail(),
     body('password')
         .isLength({ min: 8 })
         .withMessage('Password must be at least 8 characters'),
@@ -49,10 +49,10 @@ const signupValidation = [
 
 const loginValidation = [
     body('email')
-        .isEmail()
         .trim()
-        .normalizeEmail()
-        .withMessage('Valid email is required'),
+        .isEmail()
+        .withMessage('Valid email is required')
+        .normalizeEmail(),
     body('password')
         .notEmpty()
         .withMessage('Password is required')
@@ -140,6 +140,7 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
         // ============================================
         // SEND VERIFICATION EMAIL
         // ============================================
+        // Re-enabled 2025-11-03: Supabase SMTP now configured with SendGrid
         // Create verification token
         const verificationToken = await emailVerification.createVerificationToken(
             authData.user.id,
@@ -172,6 +173,7 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
             emailService.sendWelcomeEmail(email, name)
                 .catch(err => console.warn('Welcome email send failed (non-critical):', err.message));
         }
+        console.log('✅ Verification email sent to:', email);
 
         res.json({
             success: true,
@@ -181,7 +183,7 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
                 email: authData.user.email,
                 name: authData.user.user_metadata?.name || ''
             },
-            message: 'Account created successfully. Please check your email to verify your account.'
+            message: 'Account created successfully! Please check your email to verify your account.'
         });
     } catch (error) {
         console.error('Signup error:', error);
@@ -426,6 +428,7 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
         const userId = req.user.id;
         const userEmail = req.user.email;
 
+        // Re-enabled 2025-11-03: Supabase SMTP now configured with SendGrid
         // Create new verification token
         const token = await emailVerification.createVerificationToken(userId, userEmail);
 
@@ -449,26 +452,35 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
                 }).catch(logErr => console.error('Failed to log email error:', logErr));
             });
 
+        console.log('✅ Resend verification email sent to:', userEmail);
+
         res.json({
             success: true,
-            message: 'Verification email sent',
-            // In development, show the link for testing purposes
-            verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
+            message: 'Verification email sent! Please check your inbox.',
         });
     } catch (error) {
         console.error('Resend verification error:', error);
-        res.status(500).json({ error: 'Failed to send verification email' });
+        res.status(500).json({ error: 'Failed to send verification email. Please try again later.' });
     }
 });
 
 // CSRF error handler middleware
 router.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
-        // Handle CSRF token errors
+        // Handle CSRF token errors with detailed logging
         console.warn('⚠️  CSRF token validation failed:', {
             path: req.path,
             method: req.method,
-            ip: req.ip
+            ip: req.ip,
+            headers: {
+                'x-csrf-token': req.headers['x-csrf-token'] ? req.headers['x-csrf-token'].substring(0, 20) + '...' : 'MISSING',
+                'cookie': req.headers.cookie ? 'PRESENT' : 'MISSING',
+                'origin': req.headers.origin,
+                'referer': req.headers.referer
+            },
+            cookies: {
+                '_csrf': req.cookies._csrf ? req.cookies._csrf.substring(0, 20) + '...' : 'MISSING'
+            }
         });
         res.status(403).json({
             error: 'Invalid or missing CSRF token',

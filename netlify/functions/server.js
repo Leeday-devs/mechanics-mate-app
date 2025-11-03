@@ -5,7 +5,24 @@ const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();
+const { body, validationResult } = require('express-validator');
+const fs = require('fs');
+const path = require('path');
+
+// Load .env file ONLY if it exists AND we're in development
+// In production (Railway), environment variables come from the container/dashboard
+const envPath = path.join(__dirname, '.env');
+const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+const envFileExists = fs.existsSync(envPath);
+
+if (isDev && envFileExists) {
+    require('dotenv').config();
+    console.log('📝 Loaded .env file for development');
+} else if (isDev) {
+    console.log('⚠️  No .env file found, using environment variables only');
+} else {
+    console.log('🚀 Production mode - using container environment variables');
+}
 
 // ============================================
 // SENTRY ERROR TRACKING (Production Only)
@@ -37,8 +54,8 @@ if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
 // ============================================
 // ENVIRONMENT VALIDATION
 // ============================================
-const requiredEnvVars = [
-    'ANTHROPIC_API_KEY',
+// CRITICAL variables that MUST be set (without these, auth/payments won't work)
+const criticalEnvVars = [
     'SUPABASE_URL',
     'SUPABASE_ANON_KEY',
     'SUPABASE_SERVICE_ROLE_KEY',
@@ -48,13 +65,43 @@ const requiredEnvVars = [
     'JWT_SECRET'
 ];
 
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-if (missingVars.length > 0) {
-    console.error('❌ CRITICAL: Missing required environment variables:');
-    missingVars.forEach(varName => console.error(`   - ${varName}`));
-    console.error('\nPlease check your .env file and ensure all required variables are set.');
+// OPTIONAL variables that enhance functionality but aren't required for basic operation
+const optionalEnvVars = [
+    'ANTHROPIC_API_KEY'
+];
+
+const allEnvVars = [...criticalEnvVars, ...optionalEnvVars];
+
+// Debug: Log what variables we actually have
+console.log('🔍 Checking environment variables...');
+console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'NOT SET'}`);
+allEnvVars.forEach(varName => {
+    const value = process.env[varName];
+    const status = value ? '✅' : '❌';
+    const display = value ? value.substring(0, 20) + '...' : 'MISSING';
+    const isOptional = optionalEnvVars.includes(varName) ? ' (optional)' : '';
+    console.log(`   ${status} ${varName}${isOptional}: ${display}`);
+});
+
+// Check for MISSING CRITICAL variables (will cause crash)
+const missingCriticalVars = criticalEnvVars.filter(varName => !process.env[varName]);
+if (missingCriticalVars.length > 0) {
+    console.error('\n❌ CRITICAL: Missing REQUIRED environment variables:');
+    missingCriticalVars.forEach(varName => console.error(`   - ${varName}`));
+    console.error('\n⚠️  Server startup blocked - these variables are essential!');
+    console.error('\nPlease check your .env file or environment variables are set.');
     process.exit(1);
 }
+
+// Check for MISSING OPTIONAL variables (will warn but continue)
+const missingOptionalVars = optionalEnvVars.filter(varName => !process.env[varName]);
+if (missingOptionalVars.length > 0) {
+    console.warn('\n⚠️  WARNING: Missing optional environment variables:');
+    missingOptionalVars.forEach(varName => console.warn(`   - ${varName} (features using this will be disabled)`));
+    console.warn('\nServer will start but some features may not work properly.\n');
+}
+
+console.log('✅ All critical environment variables are set - server ready to start!\n');
 
 // CRITICAL: Warn if using live Stripe keys in development
 if (process.env.NODE_ENV !== 'production' && process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')) {
@@ -116,14 +163,15 @@ if (uniquePriceIds.size !== priceIds.length) {
 console.log('✅ Environment validation passed');
 
 // Import routes and middleware
-const authRoutes = require('./routes/auth');
-const subscriptionRoutes = require('./routes/subscriptions');
-const adminRoutes = require('./routes/admin');
-const logsRoutes = require('./routes/logs');
-const { authenticateToken, requireSubscription } = require('./middleware/auth');
-const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./middleware/logger');
-const { checkQuota, incrementQuota, logMessage } = require('./utils/quota');
-const logger = require('./lib/logger');
+const authRoutes = require('./src/routes/auth');
+const subscriptionRoutes = require('./src/routes/subscriptions');
+const adminRoutes = require('./src/routes/admin');
+const logsRoutes = require('./src/routes/logs');
+const { authenticateToken, requireSubscription } = require('./src/middleware/auth');
+const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./src/middleware/logger');
+const { checkQuota, incrementQuota, logMessage } = require('./src/utils/quota');
+const logger = require('./src/lib/logger');
+const { supabaseAdmin } = require('./src/lib/supabase');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -201,18 +249,47 @@ app.use('/api/', apiLimiter); // Apply rate limiting to all API endpoints
 app.use('/api/', securityLoggingMiddleware); // Detect suspicious activity
 app.use('/api/', requestLoggingMiddleware); // Log all API calls
 
+// HTML Page Routes - MUST be defined BEFORE static middleware
+// Landing page at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/landing.html'));
+});
+
+// Chat interface (previously index.html)
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
+app.get('/app', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 // Mount API routes
-// NOTE: Static files are served by Netlify directly from the public/ directory
-// This function only handles API endpoints
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/logs', logsRoutes); // Comprehensive logging endpoints
 
+// Serve static files AFTER route handlers to prevent index.html from overriding root
+app.use(express.static('./public', { index: false })); // Serve from public directory
+app.use(express.static('.', { index: false })); // Also serve root level for backwards compatibility
+
 // Initialize Anthropic client
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// Validation middleware helper
+const validateRequest = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            error: errors.array()[0].msg,
+            details: errors.array()
+        });
+    }
+    next();
+};
 
 // Function to search UK automotive forums for relevant information
 async function searchForums(vehicleInfo, userQuestion) {
@@ -252,37 +329,28 @@ async function searchForums(vehicleInfo, userQuestion) {
 }
 
 // Chat endpoint - now requires authentication and active subscription
-app.post('/api/chat', chatLimiter, authenticateToken, requireSubscription, async (req, res) => {
-    console.error('🚀 CHAT ENDPOINT REACHED');
+app.post(
+    '/api/chat',
+    chatLimiter,
+    authenticateToken,
+    requireSubscription,
+    [
+        body('message')
+            .trim()
+            .notEmpty().withMessage('Message is required')
+            .isString().withMessage('Message must be a string')
+            .isLength({ max: 5000 }).withMessage('Message is too long. Maximum length is 5000 characters.'),
+        body('conversationHistory')
+            .optional()
+            .isArray().withMessage('Conversation history must be an array')
+            .custom(arr => arr.length <= 50).withMessage('Conversation history is too long. Please start a new conversation.')
+    ],
+    validateRequest,
+    async (req, res) => {
     try {
         const { message, conversationHistory = [] } = req.body;
         const userId = req.user.id;
         const subscription = req.subscription;
-
-        // Validation
-        if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
-        }
-
-        if (typeof message !== 'string') {
-            return res.status(400).json({ error: 'Message must be a string' });
-        }
-
-        if (message.trim().length === 0) {
-            return res.status(400).json({ error: 'Message cannot be empty' });
-        }
-
-        if (message.length > 5000) {
-            return res.status(400).json({ error: 'Message is too long. Maximum length is 5000 characters.' });
-        }
-
-        if (!Array.isArray(conversationHistory)) {
-            return res.status(400).json({ error: 'Conversation history must be an array' });
-        }
-
-        if (conversationHistory.length > 50) {
-            return res.status(400).json({ error: 'Conversation history is too long. Please start a new conversation.' });
-        }
 
         // Check message quota
         const quotaCheck = await checkQuota(userId, subscription.plan_id);
@@ -318,7 +386,6 @@ app.post('/api/chat', chatLimiter, authenticateToken, requireSubscription, async
         const cleanMessage = message.replace(/\[Vehicle: [^\]]+\]\s*/, '');
 
         // Search forums for relevant discussions
-        console.log('Searching forums for:', vehicleInfo, cleanMessage);
         const forumResults = await searchForums(vehicleInfo, cleanMessage);
 
         // Build forum context for AI
@@ -463,14 +530,72 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
     }
 });
 
+// Global error handler (catches unhandled errors in middleware/routes)
+app.use((err, req, res, next) => {
+    // Log the error
+    logger.logError({
+        userId: req.user?.id,
+        message: err.message,
+        endpoint: req.path,
+        method: req.method,
+        statusCode: err.statusCode || 500
+    }).catch(logErr => console.error('Failed to log error:', logErr));
+
+    // Return user-friendly error response
+    const statusCode = err.statusCode || 500;
+    const errorId = Date.now();
+
+    res.status(statusCode).json({
+        error: process.env.NODE_ENV === 'production'
+            ? 'Internal server error'
+            : err.message,
+        errorId: errorId // For support tickets
+    });
+});
+
 // Attach Sentry error handler (must be after all routes and before Netlify export)
 if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
     app.use(Sentry.Handlers.errorHandler());
 }
 
-// Health check endpoint
-app.get('/api/health', apiLimiter, (req, res) => {
-    res.json({ status: 'ok', message: 'My Mechanic API is running' });
+// Health check endpoint with dependency verification
+app.get('/api/health', apiLimiter, async (req, res) => {
+    try {
+        const checks = {
+            database: false,
+            anthropic: !!process.env.ANTHROPIC_API_KEY,
+            stripe: !!process.env.STRIPE_SECRET_KEY,
+            jwt: !!process.env.JWT_SECRET
+        };
+
+        // Test Supabase connection
+        try {
+            const { data } = await supabaseAdmin.auth.admin.listUsers({ limit: 1 });
+            checks.database = true;
+        } catch (dbError) {
+            console.warn('Database health check failed:', dbError.message);
+            checks.database = false;
+        }
+
+        const allHealthy = Object.values(checks).every(v => v === true);
+        const statusCode = allHealthy ? 200 : 503;
+
+        res.status(statusCode).json({
+            status: allHealthy ? 'ok' : 'degraded',
+            timestamp: new Date().toISOString(),
+            checks,
+            message: allHealthy
+                ? 'My Mechanic API is running with all dependencies'
+                : 'My Mechanic API is running but some dependencies are unavailable'
+        });
+    } catch (error) {
+        console.error('Health check error:', error);
+        res.status(503).json({
+            status: 'error',
+            timestamp: new Date().toISOString(),
+            message: 'Health check failed'
+        });
+    }
 });
 
 // Always export the app for Netlify Functions

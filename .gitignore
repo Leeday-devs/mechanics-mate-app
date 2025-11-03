@@ -24,3 +24,6 @@ Thumbs.db
 
 # Local Netlify folder
 .netlify
+
+# Archived documentation
+archive/

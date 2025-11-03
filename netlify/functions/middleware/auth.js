@@ -27,9 +27,7 @@ async function authenticateToken(req, res, next) {
                 .single();
 
             if (blacklistedToken) {
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn(`⚠️  Attempt to use blacklisted token for user: ${decoded.email}`);
-                }
+                console.warn(`⚠️  Attempt to use blacklisted token for user: ${decoded.email}`);
                 return res.status(401).json({
                     error: 'Token has been revoked',
                     code: 'TOKEN_REVOKED'
@@ -38,9 +36,7 @@ async function authenticateToken(req, res, next) {
         } catch (error) {
             // If token_blacklist table doesn't exist yet, log but continue
             if (error.code !== 'PGRST116') { // "not found" error code
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn('⚠️  Could not check token blacklist:', error.message);
-                }
+                console.warn('⚠️  Could not check token blacklist:', error.message);
             }
         }
 
@@ -48,16 +44,10 @@ async function authenticateToken(req, res, next) {
         const { data: user, error } = await supabaseAdmin.auth.admin.getUserById(decoded.userId);
 
         if (error) {
-            if (process.env.NODE_ENV === 'development') {
-                console.error('❌ Supabase error looking up user:', error);
-            }
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
 
         if (!user || !user.user) {
-            if (process.env.NODE_ENV === 'development') {
-                console.error('❌ User not found in Supabase');
-            }
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
 
@@ -70,9 +60,6 @@ async function authenticateToken(req, res, next) {
 
         next();
     } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-            console.error('❌ Auth middleware error:', error.message);
-        }
         return res.status(403).json({ error: 'Invalid or expired token' });
     }
 }
@@ -83,7 +70,10 @@ async function requireSubscription(req, res, next) {
         const userId = req.user.id;
 
         // Get user's subscription (accept pending, active, trialing, or incomplete)
-        // 'pending' is included because subscription is created with pending status before webhook arrives
+        // pending = subscription record created during checkout, waiting for webhook
+        // active = subscription confirmed by webhook
+        // trialing = free trial
+        // incomplete = payment in progress
         const { data: subscription, error } = await supabaseAdmin
             .from('subscriptions')
             .select('*')

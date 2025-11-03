@@ -1,11 +1,11 @@
 {
-  "name": "my-mechanic",
+  "name": "car-mechanic",
   "version": "1.0.1",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build-functions": "mkdir -p netlify/functions && cp -r routes lib middleware utils netlify/functions/ && cp server.js netlify/functions/server.js && echo 'Functions built'",
+    "build-functions": "mkdir -p netlify/functions && cp -r src/routes src/lib src/middleware src/utils netlify/functions/ && cp server.js netlify/functions/server.js && echo 'Functions built'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

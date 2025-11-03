@@ -7,6 +7,46 @@ const logger = require('../lib/logger');
 
 const router = express.Router();
 
+// ============================================
+// CHECK SUBSCRIPTION STATUS (for loading page)
+// ============================================
+// Get current subscription status - used while loading after payment
+router.get('/status', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Get user's subscription (include 'pending' status which is set during checkout)
+        const { data: subscriptions, error } = await supabaseAdmin
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', userId)
+            .in('status', ['pending', 'active', 'trialing', 'incomplete']);
+
+        if (error || !subscriptions || subscriptions.length === 0) {
+            return res.status(404).json({
+                error: 'No subscription found',
+                subscription: null
+            });
+        }
+
+        // Return the first subscription (most recent)
+        const subscription = subscriptions[0];
+
+        res.json({
+            subscription: {
+                id: subscription.id,
+                plan_id: subscription.plan_id,
+                status: subscription.status,
+                current_period_start: subscription.current_period_start,
+                current_period_end: subscription.current_period_end
+            }
+        });
+    } catch (error) {
+        console.error('Subscription status check error:', error);
+        res.status(500).json({ error: 'Error checking subscription' });
+    }
+});
+
 // Create Stripe checkout session
 router.post('/create-checkout', authenticateToken, async (req, res) => {
     try {
@@ -32,15 +72,19 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
 
         // Create or get Stripe customer
         let customerId;
-        const { data: subscription } = await supabaseAdmin
+        let subscriptionId;
+        const { data: existingSubscription } = await supabaseAdmin
             .from('subscriptions')
-            .select('stripe_customer_id')
+            .select('*')
             .eq('user_id', userId)
-            .single();
+            .not('status', 'eq', 'canceled');
 
-        if (subscription?.stripe_customer_id) {
-            customerId = subscription.stripe_customer_id;
+        if (existingSubscription && existingSubscription.length > 0) {
+            // Use existing subscription record
+            customerId = existingSubscription[0].stripe_customer_id;
+            subscriptionId = existingSubscription[0].id;
         } else {
+            // Create new Stripe customer
             const customer = await stripe.customers.create({
                 email: userEmail,
                 metadata: {
@@ -48,6 +92,34 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
                 }
             });
             customerId = customer.id;
+
+            // Create subscription record with 'pending' status
+            // This ensures the subscription exists while waiting for webhook
+            console.log('[Checkout] Creating subscription record:', { userId, customerId, planId });
+
+            const { data: newSub, error: subError } = await supabaseAdmin
+                .from('subscriptions')
+                .insert({
+                    user_id: userId,
+                    stripe_customer_id: customerId,
+                    plan_id: planId,
+                    status: 'pending' // Temporary status until webhook confirms
+                })
+                .select()
+                .single();
+
+            if (subError) {
+                console.error('[Checkout] Failed to create subscription:', subError);
+                throw new Error(`Failed to create subscription record: ${subError.message}`);
+            }
+
+            if (newSub) {
+                console.log('[Checkout] Subscription created successfully:', newSub.id);
+                subscriptionId = newSub.id;
+            } else {
+                console.error('[Checkout] Subscription insert returned no data');
+                throw new Error('Subscription record was not created');
+            }
         }
 
         // Create checkout session
@@ -61,7 +133,7 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
                 }
             ],
             mode: 'subscription',
-            success_url: `${req.headers.origin || 'http://localhost:3000'}/dashboard.html?success=true`,
+            success_url: `${req.headers.origin || 'http://localhost:3000'}/loading.html?success=true`,
             cancel_url: `${req.headers.origin || 'http://localhost:3000'}/pricing.html?canceled=true`,
             metadata: {
                 user_id: userId,
@@ -283,21 +355,80 @@ async function handleSubscriptionUpdate(subscription) {
         planId = Object.keys(PLAN_PRICES).find(key => PLAN_PRICES[key] === priceId) || 'starter';
     }
 
-    // Upsert subscription
-    await supabaseAdmin
+    console.log('[Webhook] Processing subscription update:', {
+        customerId,
+        subscriptionId,
+        userId,
+        status,
+        planId
+    });
+
+    // First, find the existing subscription record by user_id and customer_id
+    const { data: existingSubscription, error: fetchError } = await supabaseAdmin
         .from('subscriptions')
-        .upsert({
-            user_id: userId,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            plan_id: planId,
-            status: status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end
-        }, {
-            onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .eq('stripe_customer_id', customerId)
+        .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 means "No rows found"
+        console.error('[Webhook] Error fetching existing subscription:', fetchError);
+    }
+
+    // Build the subscription data with safe date handling
+    const subscriptionData = {
+        stripe_subscription_id: subscriptionId,
+        plan_id: planId,
+        status: status,
+        cancel_at_period_end: subscription.cancel_at_period_end
+    };
+
+    // Only add dates if they exist and are valid
+    if (subscription.current_period_start) {
+        try {
+            subscriptionData.current_period_start = new Date(subscription.current_period_start * 1000).toISOString();
+        } catch (e) {
+            console.warn('[Webhook] Could not parse current_period_start:', subscription.current_period_start);
+        }
+    }
+
+    if (subscription.current_period_end) {
+        try {
+            subscriptionData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString();
+        } catch (e) {
+            console.warn('[Webhook] Could not parse current_period_end:', subscription.current_period_end);
+        }
+    }
+
+    if (existingSubscription) {
+        // Update the existing subscription record
+        console.log('[Webhook] Updating existing subscription:', existingSubscription.id);
+        const { error: updateError } = await supabaseAdmin
+            .from('subscriptions')
+            .update(subscriptionData)
+            .eq('id', existingSubscription.id);
+
+        if (updateError) {
+            console.error('[Webhook] Failed to update subscription:', updateError);
+            throw updateError;
+        }
+    } else {
+        // Create new subscription record if it doesn't exist
+        console.log('[Webhook] Creating new subscription');
+        const { error: insertError } = await supabaseAdmin
+            .from('subscriptions')
+            .insert({
+                user_id: userId,
+                stripe_customer_id: customerId,
+                ...subscriptionData
+            });
+
+        if (insertError) {
+            console.error('[Webhook] Failed to create subscription:', insertError);
+            throw insertError;
+        }
+    }
 
     // Log subscription update
     logger.logSubscription({
@@ -308,7 +439,7 @@ async function handleSubscriptionUpdate(subscription) {
         message: `Subscription updated to ${status} for plan: ${planId}`
     }).catch(err => console.error('Failed to log subscription update:', err));
 
-    console.log('Subscription updated for user:', userId);
+    console.log('[Webhook] Subscription successfully processed for user:', userId);
 }
 
 // Handle subscription deletion

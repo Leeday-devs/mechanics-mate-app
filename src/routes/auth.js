@@ -138,8 +138,11 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
         );
 
         // ============================================
-        // SEND VERIFICATION EMAIL
+        // SEND VERIFICATION EMAIL - TEMPORARILY DISABLED
         // ============================================
+        // DISABLED 2025-11-02: Supabase email rate limit reached
+        // TODO: RE-ENABLE BEFORE PRODUCTION - See /home/lddevs/PRODUCTION_REMINDERS.md
+        /*
         // Create verification token
         const verificationToken = await emailVerification.createVerificationToken(
             authData.user.id,
@@ -172,6 +175,8 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
             emailService.sendWelcomeEmail(email, name)
                 .catch(err => console.warn('Welcome email send failed (non-critical):', err.message));
         }
+        */
+        console.log('⚠️  EMAIL DISABLED: Verification email not sent (rate limit). See PRODUCTION_REMINDERS.md');
 
         res.json({
             success: true,
@@ -181,7 +186,7 @@ router.post('/signup', csrfProtection, authLimiter, signupValidation, handleVali
                 email: authData.user.email,
                 name: authData.user.user_metadata?.name || ''
             },
-            message: 'Account created successfully. Please check your email to verify your account.'
+            message: 'Account created successfully! You can start using the app immediately.'
         });
     } catch (error) {
         console.error('Signup error:', error);
@@ -426,6 +431,9 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
         const userId = req.user.id;
         const userEmail = req.user.email;
 
+        // TEMPORARILY DISABLED 2025-11-02: Supabase email rate limit reached
+        // TODO: RE-ENABLE BEFORE PRODUCTION - See /home/lddevs/PRODUCTION_REMINDERS.md
+        /*
         // Create new verification token
         const token = await emailVerification.createVerificationToken(userId, userEmail);
 
@@ -448,27 +456,39 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
                     userId: userId
                 }).catch(logErr => console.error('Failed to log email error:', logErr));
             });
+        */
+
+        console.log('⚠️  EMAIL DISABLED: Resend verification email not sent (rate limit). See PRODUCTION_REMINDERS.md');
 
         res.json({
             success: true,
-            message: 'Verification email sent',
+            message: 'Email sending is temporarily disabled due to rate limits. Your account is still active.',
             // In development, show the link for testing purposes
-            verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
+            // verificationLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
         });
     } catch (error) {
         console.error('Resend verification error:', error);
-        res.status(500).json({ error: 'Failed to send verification email' });
+        res.status(500).json({ error: 'Email sending is temporarily disabled' });
     }
 });
 
 // CSRF error handler middleware
 router.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
-        // Handle CSRF token errors
+        // Handle CSRF token errors with detailed logging
         console.warn('⚠️  CSRF token validation failed:', {
             path: req.path,
             method: req.method,
-            ip: req.ip
+            ip: req.ip,
+            headers: {
+                'x-csrf-token': req.headers['x-csrf-token'] ? req.headers['x-csrf-token'].substring(0, 20) + '...' : 'MISSING',
+                'cookie': req.headers.cookie ? 'PRESENT' : 'MISSING',
+                'origin': req.headers.origin,
+                'referer': req.headers.referer
+            },
+            cookies: {
+                '_csrf': req.cookies._csrf ? req.cookies._csrf.substring(0, 20) + '...' : 'MISSING'
+            }
         });
         res.status(403).json({
             error: 'Invalid or missing CSRF token',

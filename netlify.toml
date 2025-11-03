@@ -5,8 +5,8 @@
 
 # Environment variables for production
 [build.environment]
-  SITE_URL = "https://mechanics-mate.netlify.app"
-  APP_URL = "https://mechanics-mate.netlify.app"
+  SITE_URL = "https://car-mechanic.co.uk"
+  APP_URL = "https://car-mechanic.co.uk"
 
 [[redirects]]
   from = "http://*"

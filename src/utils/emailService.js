@@ -24,10 +24,10 @@ async function sendVerificationEmail(email, verificationLink, name = null) {
     const msg = {
         to: email,
         from: {
-            email: process.env.SENDGRID_FROM_EMAIL || 'noreply@mechanics-mate.app',
-            name: process.env.SENDGRID_FROM_NAME || 'Mechanics Mate'
+            email: process.env.SENDGRID_FROM_EMAIL || 'noreply@car-mechanic.co.uk',
+            name: process.env.SENDGRID_FROM_NAME || 'Car Mechanic'
         },
-        subject: 'Verify Your Mechanics Mate Email',
+        subject: 'Verify Your Car Mechanic Email',
         html: `
             <!DOCTYPE html>
             <html>
@@ -111,14 +111,14 @@ async function sendVerificationEmail(email, verificationLink, name = null) {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🚗 Mechanics Mate</h1>
+                        <h1>🚗 Car Mechanic</h1>
                         <p style="margin: 0; opacity: 0.9;">Verify Your Email</p>
                     </div>
 
                     <div class="content">
                         <h2>Welcome${name ? `, ${name}` : ''}!</h2>
 
-                        <p>Thank you for signing up for Mechanics Mate! We're excited to have you on board.</p>
+                        <p>Thank you for signing up for Car Mechanic! We're excited to have you on board.</p>
 
                         <p>To get started with expert AI-powered automotive advice, please verify your email address by clicking the button below:</p>
 
@@ -142,13 +142,13 @@ async function sendVerificationEmail(email, verificationLink, name = null) {
                         </ul>
 
                         <div class="footer">
-                            <p>© 2025 Mechanics Mate. All rights reserved.</p>
+                            <p>© 2025 Car Mechanic. All rights reserved.</p>
                             <p>
-                                <a href="https://mechanics-mate.app/privacy">Privacy Policy</a> |
-                                <a href="https://mechanics-mate.app/terms">Terms of Service</a> |
-                                <a href="https://mechanics-mate.app/support">Support</a>
+                                <a href="https://car-mechanic.co.uk/privacy">Privacy Policy</a> |
+                                <a href="https://car-mechanic.co.uk/terms">Terms of Service</a> |
+                                <a href="https://car-mechanic.co.uk/support">Support</a>
                             </p>
-                            <p>Mechanics Mate Inc. | contact@mechanics-mate.app</p>
+                            <p>Car Mechanic UK | contact@car-mechanic.co.uk</p>
                         </div>
                     </div>
                 </div>
@@ -160,7 +160,7 @@ Verify Your Email
 
 Welcome${name ? `, ${name}` : ''}!
 
-Thank you for signing up for Mechanics Mate! Please verify your email address to complete your account setup.
+Thank you for signing up for Car Mechanic! Please verify your email address to complete your account setup.
 
 Click the link below to verify your email:
 ${verificationLink}
@@ -168,7 +168,7 @@ ${verificationLink}
 This link will expire in 24 hours. If you didn't create this account, you can safely ignore this email.
 
 Best regards,
-Mechanics Mate Team
+Car Mechanic Team
         `
     };
 
@@ -200,10 +200,10 @@ async function sendWelcomeEmail(email, name) {
     const msg = {
         to: email,
         from: {
-            email: process.env.SENDGRID_FROM_EMAIL || 'noreply@mechanics-mate.app',
-            name: process.env.SENDGRID_FROM_NAME || 'Mechanics Mate'
+            email: process.env.SENDGRID_FROM_EMAIL || 'noreply@car-mechanic.co.uk',
+            name: process.env.SENDGRID_FROM_NAME || 'Car Mechanic'
         },
-        subject: 'Welcome to Mechanics Mate!',
+        subject: 'Welcome to Car Mechanic!',
         html: `
             <!DOCTYPE html>
             <html>
@@ -276,19 +276,19 @@ async function sendWelcomeEmail(email, name) {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🚗 Mechanics Mate</h1>
+                        <h1>🚗 Car Mechanic</h1>
                         <p style="margin: 0; opacity: 0.9;">Your AI-Powered Automotive Assistant</p>
                     </div>
 
                     <div class="content">
                         <h2>Welcome, ${name || 'Friend'}!</h2>
 
-                        <p>Your Mechanics Mate account is ready to go! 🎉</p>
+                        <p>Your Car Mechanic account is ready to go! 🎉</p>
 
                         <p>Get expert automotive advice powered by AI and real-world forum discussions. Whether you're diagnosing a problem or planning maintenance, we've got you covered.</p>
 
                         <center>
-                            <a href="https://mechanics-mate.app/chat" class="button">Start Chatting Now</a>
+                            <a href="https://car-mechanic.co.uk/chat" class="button">Start Chatting Now</a>
                         </center>
 
                         <h3>What You Can Do Now:</h3>
@@ -313,17 +313,17 @@ async function sendWelcomeEmail(email, name) {
                         </div>
 
                         <p style="margin-top: 30px;">
-                            <strong>Need help?</strong> Check out our <a href="https://mechanics-mate.app/docs">documentation</a> or <a href="https://mechanics-mate.app/support">contact support</a>.
+                            <strong>Need help?</strong> Check out our <a href="https://car-mechanic.co.uk/docs">documentation</a> or <a href="https://car-mechanic.co.uk/support">contact support</a>.
                         </p>
 
                         <div class="footer">
-                            <p>© 2025 Mechanics Mate. All rights reserved.</p>
+                            <p>© 2025 Car Mechanic. All rights reserved.</p>
                             <p>
-                                <a href="https://mechanics-mate.app/privacy">Privacy Policy</a> |
-                                <a href="https://mechanics-mate.app/terms">Terms of Service</a> |
-                                <a href="https://mechanics-mate.app/support">Support</a>
+                                <a href="https://car-mechanic.co.uk/privacy">Privacy Policy</a> |
+                                <a href="https://car-mechanic.co.uk/terms">Terms of Service</a> |
+                                <a href="https://car-mechanic.co.uk/support">Support</a>
                             </p>
-                            <p>Mechanics Mate Inc. | contact@mechanics-mate.app</p>
+                            <p>Car Mechanic UK | contact@car-mechanic.co.uk</p>
                         </div>
                     </div>
                 </div>
@@ -333,10 +333,10 @@ async function sendWelcomeEmail(email, name) {
         text: `
 Welcome, ${name || 'Friend'}!
 
-Your Mechanics Mate account is ready to go!
+Your Car Mechanic account is ready to go!
 
 Get expert automotive advice powered by AI. Visit our chat to get started:
-https://mechanics-mate.app/chat
+https://car-mechanic.co.uk/chat
 
 You can now:
 - Get instant automotive advice for your vehicle
@@ -344,10 +344,10 @@ You can now:
 - Track maintenance and repairs
 - Access premium features with your subscription
 
-Need help? Visit https://mechanics-mate.app/support
+Need help? Visit https://car-mechanic.co.uk/support
 
 Best regards,
-Mechanics Mate Team
+Car Mechanic Team
         `
     };
 
@@ -380,10 +380,10 @@ async function sendPasswordResetEmail(email, resetLink, name = null) {
     const msg = {
         to: email,
         from: {
-            email: process.env.SENDGRID_FROM_EMAIL || 'noreply@mechanics-mate.app',
-            name: process.env.SENDGRID_FROM_NAME || 'Mechanics Mate'
+            email: process.env.SENDGRID_FROM_EMAIL || 'noreply@car-mechanic.co.uk',
+            name: process.env.SENDGRID_FROM_NAME || 'Car Mechanic'
         },
-        subject: 'Reset Your Mechanics Mate Password',
+        subject: 'Reset Your Car Mechanic Password',
         html: `
             <!DOCTYPE html>
             <html>
@@ -442,14 +442,14 @@ async function sendPasswordResetEmail(email, resetLink, name = null) {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🚗 Mechanics Mate</h1>
+                        <h1>🚗 Car Mechanic</h1>
                         <p style="margin: 0; opacity: 0.9;">Password Reset</p>
                     </div>
 
                     <div class="content">
                         <h2>Reset Your Password</h2>
 
-                        <p>We received a request to reset your Mechanics Mate password. Click the button below to create a new password:</p>
+                        <p>We received a request to reset your Car Mechanic password. Click the button below to create a new password:</p>
 
                         <center>
                             <a href="${resetLink}" class="button">Reset Password</a>
@@ -462,7 +462,7 @@ async function sendPasswordResetEmail(email, resetLink, name = null) {
                         <p><strong>This link expires in 1 hour.</strong> For your security, don't share this email or the reset link with anyone.</p>
 
                         <div class="footer">
-                            <p>© 2025 Mechanics Mate. All rights reserved.</p>
+                            <p>© 2025 Car Mechanic. All rights reserved.</p>
                         </div>
                     </div>
                 </div>

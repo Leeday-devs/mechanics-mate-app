@@ -1,4 +1,4 @@
-// My Mechanic JavaScript
+// Car Mechanic JavaScript
 
 // API Configuration - Environment aware
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -28,7 +28,7 @@ if ('serviceWorker' in navigator) {
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                             // New service worker available, prompt user to refresh
-                            if (confirm('A new version of My Mechanic is available. Reload to update?')) {
+                            if (confirm('A new version of Car Mechanic is available. Reload to update?')) {
                                 newWorker.postMessage({ type: 'SKIP_WAITING' });
                                 window.location.reload();
                             }
@@ -88,7 +88,7 @@ function showInstallButton() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('My Mechanic website loaded');
+    console.log('Car Mechanic website loaded');
     console.log('API URL:', API_URL);
     console.log('Running as PWA:', isPWA());
 
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
             if (isIOS) {
-                alert('To install My Mechanic on your iPhone:\n\n1. Tap the Share button (square with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to install the app\n\nThe app will appear on your home screen!');
+                alert('To install Car Mechanic on your iPhone:\n\n1. Tap the Share button (square with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to install the app\n\nThe app will appear on your home screen!');
             } else {
                 alert('iOS installation is only available on iPhone, iPad, or iPod devices.');
             }
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <circle cx="38" cy="38" r="5" fill="#d32f2f"/>
                     </svg>
                 </div>
-                <h1 class="welcome-title">Welcome to My Mechanic</h1>
+                <h1 class="welcome-title">Welcome to Car Mechanic</h1>
                 <p class="welcome-subtitle">Your fast automotive Assistant</p>
                 <div class="suggestions">
                     <button class="suggestion-card" data-prompt="My engine management light is on, what should I do?">
@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Export conversation as text file
     function exportAsText() {
         const vehicleInfo = getVehicleInfo();
-        let textContent = 'My Mechanic - Conversation Export\n';
+        let textContent = 'Car Mechanic - Conversation Export\n';
         textContent += '='.repeat(50) + '\n\n';
 
         if (vehicleInfo) {

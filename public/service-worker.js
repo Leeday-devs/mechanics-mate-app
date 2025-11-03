@@ -1,4 +1,4 @@
-// My Mechanic Service Worker
+// Car Mechanic Service Worker
 // Version 1.0.0
 
 const CACHE_NAME = 'my-mechanic-v1';

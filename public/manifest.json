@@ -1,6 +1,6 @@
 {
-  "name": "My Mechanic - AI Automotive Assistant",
-  "short_name": "My Mechanic",
+  "name": "Car Mechanic - AI Automotive Assistant",
+  "short_name": "Car Mechanic",
   "description": "Your AI-powered automotive assistant for car repair, maintenance, and troubleshooting advice",
   "start_url": "/",
   "scope": "/",

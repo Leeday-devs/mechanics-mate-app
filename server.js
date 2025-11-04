@@ -1,13 +1,13 @@
 const express = require('express');
 const Anthropic = require('@anthropic-ai/sdk');
 const cors = require('cors');
-const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const { body, validationResult } = require('express-validator');
 const fs = require('fs');
 const path = require('path');
+const FirecrawlApp = require('@mendable/firecrawl-js').default;
 
 // Load .env file ONLY if it exists AND we're in development
 // In production (Railway), environment variables come from the container/dashboard
@@ -291,36 +291,61 @@ const validateRequest = (req, res, next) => {
     next();
 };
 
-// Function to search UK automotive forums for relevant information
+// Function to search UK automotive forums for relevant information using Firecrawl
 async function searchForums(vehicleInfo, userQuestion) {
     try {
-        // Build search query targeting popular UK car forums
-        const searchQuery = `${vehicleInfo} ${userQuestion} site:pistonheads.com OR site:honestjohn.co.uk OR site:reddit.com/r/CarTalkUK OR site:reddit.com/r/MechanicAdvice OR site:ukworkshop.co.uk`;
+        // Check if Firecrawl API key is configured
+        const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
 
-        // Using Google Custom Search API (you'll need to add GOOGLE_SEARCH_API_KEY and SEARCH_ENGINE_ID to .env)
-        const searchApiKey = process.env.GOOGLE_SEARCH_API_KEY;
-        const searchEngineId = process.env.SEARCH_ENGINE_ID;
-
-        if (!searchApiKey || !searchEngineId) {
-            console.log('Search API not configured, skipping forum search');
+        if (!firecrawlApiKey) {
+            console.log('Firecrawl API not configured, skipping forum search');
             return null;
         }
 
-        const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${searchApiKey}&cx=${searchEngineId}&q=${encodeURIComponent(searchQuery)}&num=5`;
+        // Initialize Firecrawl client
+        const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
 
-        const response = await axios.get(searchUrl, { timeout: 5000 });
+        // Build search query targeting popular UK car forums
+        const searchQuery = `${vehicleInfo} ${userQuestion}`;
 
-        if (response.data.items && response.data.items.length > 0) {
+        // Target UK automotive forums
+        const targetSites = [
+            'pistonheads.com',
+            'honestjohn.co.uk',
+            'reddit.com/r/CarTalkUK',
+            'reddit.com/r/MechanicAdvice',
+            'ukworkshop.co.uk'
+        ];
+
+        console.log(`🔍 Searching forums for: ${searchQuery}`);
+
+        // Use Firecrawl search with limited results
+        const searchResults = await firecrawl.search(searchQuery, {
+            limit: 5,
+            scrapeOptions: {
+                formats: ['markdown']
+            }
+        });
+
+        if (searchResults && searchResults.data && searchResults.data.length > 0) {
+            // Filter results to only include our target UK forums
+            const filteredResults = searchResults.data.filter(item => {
+                const url = item.url || '';
+                return targetSites.some(site => url.includes(site));
+            });
+
             // Extract relevant snippets from search results
-            const forumResults = response.data.items.map(item => ({
-                title: item.title,
-                snippet: item.snippet,
-                link: item.link
+            const forumResults = filteredResults.slice(0, 5).map(item => ({
+                title: item.title || 'Forum Discussion',
+                snippet: item.description || item.markdown?.substring(0, 300) || '',
+                link: item.url || ''
             }));
 
-            return forumResults;
+            console.log(`✅ Found ${forumResults.length} relevant forum results`);
+            return forumResults.length > 0 ? forumResults : null;
         }
 
+        console.log('ℹ️ No forum results found');
         return null;
     } catch (error) {
         console.error('Forum search error:', error.message);

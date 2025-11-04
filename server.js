@@ -291,6 +291,16 @@ const validateRequest = (req, res, next) => {
     next();
 };
 
+// Helper function to add timeout to promises
+function withTimeout(promise, timeoutMs, timeoutMessage = 'Operation timed out') {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
+        )
+    ]);
+}
+
 // Function to search UK automotive forums for relevant information using Firecrawl
 async function searchForums(vehicleInfo, userQuestion) {
     try {
@@ -319,13 +329,17 @@ async function searchForums(vehicleInfo, userQuestion) {
 
         console.log(`🔍 Searching forums for: ${searchQuery}`);
 
-        // Use Firecrawl search with limited results
-        const searchResults = await firecrawl.search(searchQuery, {
-            limit: 5,
-            scrapeOptions: {
-                formats: ['markdown']
-            }
-        });
+        // Use Firecrawl search with limited results and timeout (3 seconds max)
+        const searchResults = await withTimeout(
+            firecrawl.search(searchQuery, {
+                limit: 3, // Reduced from 5 to speed up search
+                scrapeOptions: {
+                    formats: ['markdown']
+                }
+            }),
+            3000, // 3 second timeout
+            'Forum search timed out'
+        );
 
         if (searchResults && searchResults.data && searchResults.data.length > 0) {
             // Filter results to only include our target UK forums
@@ -335,9 +349,9 @@ async function searchForums(vehicleInfo, userQuestion) {
             });
 
             // Extract relevant snippets from search results
-            const forumResults = filteredResults.slice(0, 5).map(item => ({
+            const forumResults = filteredResults.slice(0, 3).map(item => ({
                 title: item.title || 'Forum Discussion',
-                snippet: item.description || item.markdown?.substring(0, 300) || '',
+                snippet: item.description || item.markdown?.substring(0, 250) || '',
                 link: item.url || ''
             }));
 
@@ -348,7 +362,12 @@ async function searchForums(vehicleInfo, userQuestion) {
         console.log('ℹ️ No forum results found');
         return null;
     } catch (error) {
-        console.error('Forum search error:', error.message);
+        // If search times out or fails, just skip it - don't break the chat
+        if (error.message.includes('timed out')) {
+            console.log('⏱️ Forum search timed out, skipping');
+        } else {
+            console.error('Forum search error:', error.message);
+        }
         return null;
     }
 }

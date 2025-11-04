@@ -19,11 +19,12 @@
   to = "/.netlify/functions/api/:splat"
   status = 200
 
-# Root to landing page
+# Root to landing page (force=true overrides default index.html)
 [[redirects]]
   from = "/"
   to = "/landing.html"
   status = 200
+  force = true
 
 # Chat page
 [[redirects]]

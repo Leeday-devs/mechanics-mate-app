@@ -659,6 +659,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Speed settings (in milliseconds)
         const typingSpeed = 15; // Speed per character
 
+        // Helper function to check if user is at bottom of chat
+        function isUserAtBottom() {
+            const threshold = 100; // pixels from bottom
+            const scrollBottom = chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight;
+            return scrollBottom < threshold;
+        }
+
+        // Helper function to scroll to bottom smoothly only if user was at bottom
+        function smartScroll() {
+            if (isUserAtBottom()) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
         function typeNextChar() {
             // If we've finished all nodes, we're done
             if (currentNodeIndex >= nodes.length) {
@@ -678,8 +692,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentElement.textContent += node.textContent[currentCharIndex];
                     currentCharIndex++;
 
-                    // Scroll to bottom as we type
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    // Only scroll if user is at bottom
+                    smartScroll();
 
                     setTimeout(typeNextChar, typingSpeed);
                 } else {
@@ -703,8 +717,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentElement.textContent += textContent[currentCharIndex];
                     currentCharIndex++;
 
-                    // Scroll to bottom as we type
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    // Only scroll if user is at bottom
+                    smartScroll();
 
                     setTimeout(typeNextChar, typingSpeed);
                 } else {

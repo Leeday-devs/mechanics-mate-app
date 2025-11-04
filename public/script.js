@@ -133,11 +133,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const loadingIndicator = document.getElementById('loading');
     const suggestionCards = document.querySelectorAll('.suggestion-card');
-    const carYear = document.getElementById('car-year');
-    const carMake = document.getElementById('car-make');
-    const carModel = document.getElementById('car-model');
-    const engineType = document.getElementById('engine-type');
-    const engineSize = document.getElementById('engine-size');
+
+    // Vehicle badge elements
+    const vehicleBadge = document.getElementById('vehicleBadge');
+    const vehicleName = document.getElementById('vehicleName');
+    const changeVehicleBtn = document.getElementById('change-vehicle-btn');
+
+    // Vehicle modal elements
+    const vehicleModal = document.getElementById('vehicleModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const saveModalBtn = document.getElementById('saveModalBtn');
+    const vehicleToast = document.getElementById('vehicleToast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    const modalCarYear = document.getElementById('modal-car-year');
+    const modalCarMake = document.getElementById('modal-car-make');
+    const modalCarModel = document.getElementById('modal-car-model');
+    const modalEngineType = document.getElementById('modal-engine-type');
+    const modalEngineSize = document.getElementById('modal-engine-size');
+
+    // Current vehicle data (loaded from localStorage)
+    let currentVehicle = {
+        year: '',
+        make: '',
+        model: '',
+        engineType: '',
+        engineSize: ''
+    };
 
     // Car data - UK/European focused
     const carMakes = ['Alfa Romeo', 'Audi', 'BMW', 'Citroen', 'Dacia', 'Fiat', 'Ford', 'Honda', 'Hyundai', 'Jaguar', 'Jeep', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'MG', 'Mini', 'Mitsubishi', 'Nissan', 'Peugeot', 'Renault', 'SEAT', 'Skoda', 'Subaru', 'Suzuki', 'Tesla', 'Toyota', 'Vauxhall', 'Volkswagen', 'Volvo'];
@@ -176,58 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'Volvo': ['V40', 'V60', 'V90', 'S60', 'S90', 'XC40', 'XC60', 'XC90', 'C40', 'EX30']
     };
 
-    // Helper function to populate dropdowns
-    function initializeVehicleSelectors() {
-        const yearSelect = document.getElementById('car-year');
-        const makeSelect = document.getElementById('car-make');
-        const modelSelect = document.getElementById('car-model');
-
-        if (!yearSelect || !makeSelect || !modelSelect) return;
-
-        // Populate year dropdown
-        const currentYear = new Date().getFullYear();
-        for (let year = currentYear; year >= 2000; year--) {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            yearSelect.appendChild(option);
-        }
-
-        // Populate make dropdown
-        carMakes.forEach(make => {
-            const option = document.createElement('option');
-            option.value = make;
-            option.textContent = make;
-            makeSelect.appendChild(option);
-        });
-
-        // Update model dropdown when make changes
-        makeSelect.addEventListener('change', function() {
-            modelSelect.innerHTML = '<option value="">Model</option>';
-            const selectedMake = this.value;
-            if (selectedMake && carModels[selectedMake]) {
-                carModels[selectedMake].forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model;
-                    option.textContent = model;
-                    modelSelect.appendChild(option);
-                });
-            }
-        });
-    }
-
-    // Initialize vehicle selectors on page load
-    initializeVehicleSelectors();
-
-    // Load saved vehicle preset
-    loadVehiclePreset();
-
-    // Save vehicle preset when any selector changes
-    [carYear, carMake, carModel, engineType, engineSize].forEach(selector => {
-        if (selector) {
-            selector.addEventListener('change', saveVehiclePreset);
-        }
-    });
+    // Old vehicle selector functions removed - now using modal-based selection
 
     // Auto-resize textarea
     userInput.addEventListener('input', function() {
@@ -334,46 +306,6 @@ document.addEventListener('DOMContentLoaded', function() {
         chatStarted = false;
         chatMessages.classList.remove('chat-started');
         chatMessages.innerHTML = `
-            <div class="vehicle-selector-section">
-                <h2 class="selector-title">Select Your Vehicle</h2>
-                <p class="selector-subtitle">Select your details and ask me a question</p>
-                <div class="car-selector">
-                    <select id="car-year" class="car-select"><option value="">Year</option></select>
-                    <select id="car-make" class="car-select"><option value="">Make</option></select>
-                    <select id="car-model" class="car-select"><option value="">Model</option></select>
-                    <select id="engine-type" class="car-select">
-                        <option value="">Engine Type</option>
-                        <option value="Petrol">Petrol</option>
-                        <option value="Diesel">Diesel</option>
-                        <option value="Hybrid">Hybrid</option>
-                        <option value="Plug-in Hybrid">Plug-in Hybrid</option>
-                        <option value="Electric">Electric</option>
-                    </select>
-                    <select id="engine-size" class="car-select">
-                        <option value="">Engine Size</option>
-                        <option value="1.0L">1.0L</option>
-                        <option value="1.2L">1.2L</option>
-                        <option value="1.4L">1.4L</option>
-                        <option value="1.5L">1.5L</option>
-                        <option value="1.6L">1.6L</option>
-                        <option value="1.8L">1.8L</option>
-                        <option value="2.0L">2.0L</option>
-                        <option value="2.2L">2.2L</option>
-                        <option value="2.4L">2.4L</option>
-                        <option value="2.5L">2.5L</option>
-                        <option value="2.7L">2.7L</option>
-                        <option value="3.0L">3.0L</option>
-                        <option value="3.5L">3.5L</option>
-                        <option value="3.6L">3.6L</option>
-                        <option value="4.0L">4.0L</option>
-                        <option value="4.6L">4.6L</option>
-                        <option value="5.0L">5.0L</option>
-                        <option value="5.3L">5.3L</option>
-                        <option value="5.7L">5.7L</option>
-                        <option value="6.2L">6.2L</option>
-                    </select>
-                </div>
-            </div>
             <div class="welcome-section">
                 <div class="welcome-icon">
                     <svg width="44" height="44" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -408,9 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        // Re-initialize vehicle selectors
-        initializeVehicleSelectors();
-
         // Re-attach event listeners to new suggestion cards
         document.querySelectorAll('.suggestion-card').forEach(card => {
             card.addEventListener('click', function() {
@@ -432,12 +361,27 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Get car information
-        const year = carYear.value;
-        const make = carMake.value;
-        const model = carModel.value;
-        const engine = engineType.value;
-        const size = engineSize.value;
+        // Get car information from currentVehicle object
+        const year = currentVehicle.year;
+        const make = currentVehicle.make;
+        const model = currentVehicle.model;
+        const engine = currentVehicle.engineType;
+        const size = currentVehicle.engineSize;
+
+        // Check if this is the first message and no vehicle is selected
+        if (!chatStarted && !year && !make && !model) {
+            // Show a gentle reminder about selecting vehicle
+            const shouldContinue = confirm(
+                'For the best personalized advice, select your vehicle first.\n\n' +
+                'Click the vehicle badge in the top bar or visit the Dashboard to select your vehicle.\n\n' +
+                'Would you like to continue without vehicle details?\n\n' +
+                '(The AI will provide general advice but may ask for your vehicle details.)'
+            );
+
+            if (!shouldContinue) {
+                return; // Don't send the message, let user select vehicle
+            }
+        }
 
         // Build full message with car context
         let fullMessage = message;
@@ -878,11 +822,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Helper function to get vehicle info
     function getVehicleInfo() {
-        const year = carYear?.value;
-        const make = carMake?.value;
-        const model = carModel?.value;
-        const engine = engineType?.value;
-        const size = engineSize?.value;
+        const year = currentVehicle.year;
+        const make = currentVehicle.make;
+        const model = currentVehicle.model;
+        const engine = currentVehicle.engineType;
+        const size = currentVehicle.engineSize;
 
         if (!year && !make && !model && !engine && !size) return null;
 
@@ -958,47 +902,167 @@ document.addEventListener('DOMContentLoaded', function() {
     // Save conversation after each message
     window.addEventListener('beforeunload', saveConversation);
 
-    // Save vehicle preset
-    function saveVehiclePreset() {
-        try {
-            const preset = {
-                year: carYear?.value || '',
-                make: carMake?.value || '',
-                model: carModel?.value || '',
-                engineType: engineType?.value || '',
-                engineSize: engineSize?.value || ''
-            };
-            localStorage.setItem('myMechanic_vehiclePreset', JSON.stringify(preset));
-            console.log('[Vehicle Preset] Saved:', preset);
-        } catch (error) {
-            console.error('[Vehicle Preset] Failed to save:', error);
+    // ============================================
+    // VEHICLE MODAL FUNCTIONALITY
+    // ============================================
+
+    // Initialize modal vehicle selectors
+    function initModalVehicleSelectors() {
+        // Populate year dropdown
+        const currentYear = new Date().getFullYear();
+        for (let year = currentYear; year >= 2000; year--) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            modalCarYear.appendChild(option);
         }
+
+        // Populate make dropdown
+        carMakes.forEach(make => {
+            const option = document.createElement('option');
+            option.value = make;
+            option.textContent = make;
+            modalCarMake.appendChild(option);
+        });
+
+        // Update model dropdown when make changes
+        modalCarMake.addEventListener('change', function() {
+            modalCarModel.innerHTML = '<option value="">Model</option>';
+            const selectedMake = this.value;
+            if (selectedMake && carModels[selectedMake]) {
+                carModels[selectedMake].forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modalCarModel.appendChild(option);
+                });
+            }
+        });
     }
 
-    // Load vehicle preset
-    function loadVehiclePreset() {
+    // Load vehicle from localStorage and update display
+    function loadVehicle() {
         try {
             const saved = localStorage.getItem('myMechanic_vehiclePreset');
             if (saved) {
                 const preset = JSON.parse(saved);
-
-                if (carYear && preset.year) carYear.value = preset.year;
-                if (carMake && preset.make) {
-                    carMake.value = preset.make;
-                    // Trigger change event to populate models
-                    carMake.dispatchEvent(new Event('change'));
-                    // Wait for models to populate, then set model value
-                    setTimeout(() => {
-                        if (carModel && preset.model) carModel.value = preset.model;
-                    }, 50);
-                }
-                if (engineType && preset.engineType) engineType.value = preset.engineType;
-                if (engineSize && preset.engineSize) engineSize.value = preset.engineSize;
-
-                console.log('[Vehicle Preset] Loaded:', preset);
+                currentVehicle = preset;
+                updateVehicleBadge();
+                console.log('[Vehicle] Loaded:', preset);
             }
         } catch (error) {
-            console.error('[Vehicle Preset] Failed to load:', error);
+            console.error('[Vehicle] Failed to load:', error);
         }
     }
+
+    // Update vehicle badge display
+    function updateVehicleBadge() {
+        if (!currentVehicle.year && !currentVehicle.make && !currentVehicle.model) {
+            vehicleName.textContent = 'No vehicle';
+            return;
+        }
+
+        const parts = [];
+        if (currentVehicle.year) parts.push(currentVehicle.year);
+        if (currentVehicle.make) parts.push(currentVehicle.make);
+        if (currentVehicle.model) parts.push(currentVehicle.model);
+
+        vehicleName.textContent = parts.join(' ') || 'No vehicle';
+    }
+
+    // Open vehicle modal
+    function openVehicleModal() {
+        // Load current values into modal
+        if (modalCarYear) modalCarYear.value = currentVehicle.year || '';
+        if (modalCarMake && currentVehicle.make) {
+            modalCarMake.value = currentVehicle.make;
+            modalCarMake.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                if (modalCarModel) modalCarModel.value = currentVehicle.model || '';
+            }, 50);
+        }
+        if (modalEngineType) modalEngineType.value = currentVehicle.engineType || '';
+        if (modalEngineSize) modalEngineSize.value = currentVehicle.engineSize || '';
+
+        // Show modal
+        vehicleModal.classList.remove('hidden');
+    }
+
+    // Close vehicle modal
+    function closeVehicleModal() {
+        vehicleModal.classList.add('hidden');
+    }
+
+    // Save vehicle changes
+    function saveVehicleChanges() {
+        const vehicle = {
+            year: modalCarYear.value,
+            make: modalCarMake.value,
+            model: modalCarModel.value,
+            engineType: modalEngineType.value,
+            engineSize: modalEngineSize.value,
+            timestamp: Date.now()
+        };
+
+        try {
+            localStorage.setItem('myMechanic_vehiclePreset', JSON.stringify(vehicle));
+            currentVehicle = vehicle;
+            updateVehicleBadge();
+
+            console.log('[Vehicle] Saved:', vehicle);
+
+            // Close modal
+            closeVehicleModal();
+
+            // Show success toast
+            const parts = [];
+            if (vehicle.year) parts.push(vehicle.year);
+            if (vehicle.make) parts.push(vehicle.make);
+            if (vehicle.model) parts.push(vehicle.model);
+
+            showToast(`Vehicle updated: ${parts.join(' ') || 'No vehicle'}`);
+
+        } catch (error) {
+            console.error('[Vehicle] Failed to save:', error);
+            alert('Failed to save vehicle. Please try again.');
+        }
+    }
+
+    // Show toast notification
+    function showToast(message) {
+        toastMessage.textContent = message;
+        vehicleToast.classList.remove('hidden');
+
+        setTimeout(() => {
+            vehicleToast.classList.add('hidden');
+        }, 3000);
+    }
+
+    // Event listeners for modal
+    changeVehicleBtn.addEventListener('click', openVehicleModal);
+    closeModalBtn.addEventListener('click', closeVehicleModal);
+    cancelModalBtn.addEventListener('click', closeVehicleModal);
+    saveModalBtn.addEventListener('click', saveVehicleChanges);
+
+    // Close modal on outside click
+    vehicleModal.addEventListener('click', function(e) {
+        if (e.target === vehicleModal) {
+            closeVehicleModal();
+        }
+    });
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !vehicleModal.classList.contains('hidden')) {
+            closeVehicleModal();
+        }
+    });
+
+    // Initialize modal selectors and load vehicle
+    initModalVehicleSelectors();
+    loadVehicle();
+
+    // ============================================
+    // END VEHICLE MODAL FUNCTIONALITY
+    // ============================================
 });

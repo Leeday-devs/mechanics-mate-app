@@ -41,6 +41,17 @@
                     <span class="logo-text">Car Mechanic</span>
                 </div>
             </a>
+            <div class="vehicle-badge-container" id="vehicleBadgeContainer">
+                <div class="vehicle-badge" id="vehicleBadge">
+                    <span class="vehicle-icon-small">🚗</span>
+                    <span class="vehicle-name" id="vehicleName">No vehicle</span>
+                </div>
+                <button id="change-vehicle-btn" class="icon-btn vehicle-change-btn" title="Change vehicle">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 8L17 10L15 12M5 12L3 10L5 8M10 4V16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
             <div class="top-bar-actions">
                 <button id="install-android" class="download-btn hidden" title="Get it on Google Play">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -79,54 +90,6 @@
         <!-- Chat Container -->
         <div class="chat-wrapper">
             <div id="chat-messages" class="chat-messages">
-                <!-- Vehicle Selector Section -->
-                <div class="vehicle-selector-section">
-                    <h2 class="selector-title">Select Your Vehicle</h2>
-                    <p class="selector-subtitle">Select your details and ask me a question</p>
-                    <div class="car-selector">
-                        <select id="car-year" class="car-select">
-                            <option value="">Year</option>
-                        </select>
-                        <select id="car-make" class="car-select">
-                            <option value="">Make</option>
-                        </select>
-                        <select id="car-model" class="car-select">
-                            <option value="">Model</option>
-                        </select>
-                        <select id="engine-type" class="car-select">
-                            <option value="">Engine Type</option>
-                            <option value="Petrol">Petrol</option>
-                            <option value="Diesel">Diesel</option>
-                            <option value="Hybrid">Hybrid</option>
-                            <option value="Plug-in Hybrid">Plug-in Hybrid</option>
-                            <option value="Electric">Electric</option>
-                        </select>
-                        <select id="engine-size" class="car-select">
-                            <option value="">Engine Size</option>
-                            <option value="1.0L">1.0L</option>
-                            <option value="1.2L">1.2L</option>
-                            <option value="1.4L">1.4L</option>
-                            <option value="1.5L">1.5L</option>
-                            <option value="1.6L">1.6L</option>
-                            <option value="1.8L">1.8L</option>
-                            <option value="2.0L">2.0L</option>
-                            <option value="2.2L">2.2L</option>
-                            <option value="2.4L">2.4L</option>
-                            <option value="2.5L">2.5L</option>
-                            <option value="2.7L">2.7L</option>
-                            <option value="3.0L">3.0L</option>
-                            <option value="3.5L">3.5L</option>
-                            <option value="3.6L">3.6L</option>
-                            <option value="4.0L">4.0L</option>
-                            <option value="4.6L">4.6L</option>
-                            <option value="5.0L">5.0L</option>
-                            <option value="5.3L">5.3L</option>
-                            <option value="5.7L">5.7L</option>
-                            <option value="6.2L">6.2L</option>
-                        </select>
-                    </div>
-                </div>
-
                 <!-- Welcome Message -->
                 <div class="welcome-section">
                     <div class="welcome-icon">
@@ -190,6 +153,73 @@
                 <p class="input-hint">Car Mechanic can make mistakes. Always verify important information.</p>
             </div>
         </div>
+    </div>
+
+    <!-- Vehicle Change Modal -->
+    <div id="vehicleModal" class="vehicle-modal hidden">
+        <div class="vehicle-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Change Your Vehicle</h2>
+                <button class="modal-close" id="closeModalBtn" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4 L16 16 M16 4 L4 16" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-vehicle-selector">
+                    <select id="modal-car-year" class="modal-vehicle-input">
+                        <option value="">Year</option>
+                    </select>
+                    <select id="modal-car-make" class="modal-vehicle-input">
+                        <option value="">Make</option>
+                    </select>
+                    <select id="modal-car-model" class="modal-vehicle-input">
+                        <option value="">Model</option>
+                    </select>
+                    <select id="modal-engine-type" class="modal-vehicle-input">
+                        <option value="">Engine Type</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Hybrid">Hybrid</option>
+                        <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                        <option value="Electric">Electric</option>
+                    </select>
+                    <select id="modal-engine-size" class="modal-vehicle-input">
+                        <option value="">Engine Size</option>
+                        <option value="1.0L">1.0L</option>
+                        <option value="1.2L">1.2L</option>
+                        <option value="1.4L">1.4L</option>
+                        <option value="1.5L">1.5L</option>
+                        <option value="1.6L">1.6L</option>
+                        <option value="1.8L">1.8L</option>
+                        <option value="2.0L">2.0L</option>
+                        <option value="2.2L">2.2L</option>
+                        <option value="2.4L">2.4L</option>
+                        <option value="2.5L">2.5L</option>
+                        <option value="2.7L">2.7L</option>
+                        <option value="3.0L">3.0L</option>
+                        <option value="3.5L">3.5L</option>
+                        <option value="3.6L">3.6L</option>
+                        <option value="4.0L">4.0L</option>
+                        <option value="4.6L">4.6L</option>
+                        <option value="5.0L">5.0L</option>
+                        <option value="5.3L">5.3L</option>
+                        <option value="5.7L">5.7L</option>
+                        <option value="6.2L">6.2L</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="cancelModalBtn">Cancel</button>
+                <button class="modal-btn modal-btn-save" id="saveModalBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="vehicleToast" class="vehicle-toast hidden">
+        <span id="toastMessage"></span>
     </div>
 
     <script src="script.js"></script>

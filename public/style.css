@@ -86,6 +86,243 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* ============================================
+   VEHICLE BADGE IN TOP BAR
+   ============================================ */
+.vehicle-badge-container {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 1;
+    justify-content: center;
+    max-width: 300px;
+}
+
+.vehicle-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    background: linear-gradient(135deg, rgba(211, 47, 47, 0.2) 0%, rgba(255, 179, 0, 0.2) 100%);
+    border: 1px solid rgba(255, 179, 0, 0.4);
+    border-radius: 20px;
+    max-width: 100%;
+}
+
+.vehicle-icon-small {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.vehicle-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffb300;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vehicle-change-btn {
+    background: rgba(211, 47, 47, 0.3);
+    border: 1px solid rgba(211, 47, 47, 0.5);
+}
+
+.vehicle-change-btn:hover {
+    background: rgba(211, 47, 47, 0.5);
+    border-color: #d32f2f;
+}
+
+/* ============================================
+   VEHICLE CHANGE MODAL
+   ============================================ */
+.vehicle-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.vehicle-modal.hidden {
+    display: none;
+}
+
+.vehicle-modal-content {
+    background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
+    border: 2px solid #444;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #444;
+}
+
+.modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-vehicle-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.modal-vehicle-input {
+    padding: 0.8rem 1rem;
+    background: #2b2b2b;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.modal-vehicle-input:hover {
+    border-color: #d32f2f;
+}
+
+.modal-vehicle-input:focus {
+    outline: none;
+    border-color: #d32f2f;
+    box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 0.8rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #444;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.modal-btn-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    border: 1px solid #444;
+}
+
+.modal-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #666;
+}
+
+.modal-btn-save {
+    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.4);
+}
+
+.modal-btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(211, 47, 47, 0.5);
+}
+
+/* ============================================
+   TOAST NOTIFICATION
+   ============================================ */
+.vehicle-toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 10001;
+    animation: toastSlideIn 0.3s ease;
+}
+
+.vehicle-toast.hidden {
+    display: none;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
 /* Touch-friendly button size */
 .icon-btn {
     width: 28px;
@@ -793,9 +1030,32 @@ body {
 /* ============================================
    HIDE WELCOME WHEN CHAT STARTS
    ============================================ */
-.chat-started .welcome-section,
-.chat-started .vehicle-selector-section {
+/* Hide only welcome section when chat starts, keep vehicle selector visible */
+.chat-started .welcome-section {
     display: none;
+}
+
+/* Make vehicle selector more compact after chat starts */
+.chat-started .vehicle-selector-section {
+    padding: 0.5rem;
+    margin: 0.3rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
+}
+
+.chat-started .selector-title {
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem;
+}
+
+.chat-started .selector-subtitle {
+    display: none; /* Hide subtitle when chat is active */
+}
+
+.chat-started .car-selector {
+    gap: 0.3rem;
 }
 
 /* ============================================

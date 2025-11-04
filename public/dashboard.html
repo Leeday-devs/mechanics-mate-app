@@ -280,18 +280,35 @@
             to { transform: rotate(360deg); }
         }
 
-        .vehicle-display {
-            text-align: center;
-            padding: 20px;
-            background: #2b2b2b;
-            border: 1px solid #444;
-            border-radius: 10px;
-            margin-bottom: 15px;
+        /* Welcome section with vehicle icon */
+        .welcome-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
         }
 
-        .vehicle-icon-large {
-            font-size: 48px;
-            margin-bottom: 10px;
+        .welcome-text {
+            flex: 1;
+        }
+
+        .welcome-vehicle-icon {
+            font-size: 60px;
+            line-height: 1;
+            opacity: 0.9;
+        }
+
+        /* Compact vehicle display */
+        .vehicle-display-compact {
+            padding: 15px;
+            background: #2b2b2b;
+            border: 1px solid #444;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .vehicle-text {
@@ -306,15 +323,114 @@
             color: #888;
         }
 
-        .vehicle-selector-compact {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
+        /* Card divider and subtitle */
+        .card-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #444, transparent);
+            margin: 20px 0 15px 0;
         }
 
-        .vehicle-input {
-            padding: 12px;
+        .card-subtitle {
+            font-size: 14px;
+            font-weight: 600;
+            color: #b0b0b0;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Modal styles */
+        .vehicle-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 1rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .vehicle-modal.hidden {
+            display: none;
+        }
+
+        .vehicle-modal-content {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
+            border: 2px solid #444;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #444;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-vehicle-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .modal-vehicle-input {
+            padding: 0.8rem 1rem;
             background: #2b2b2b;
             border: 1px solid #444;
             border-radius: 8px;
@@ -323,25 +439,90 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: inherit;
         }
 
-        .vehicle-input:hover {
+        .modal-vehicle-input:hover {
             border-color: #d32f2f;
         }
 
-        .vehicle-input:focus {
+        .modal-vehicle-input:focus {
             outline: none;
             border-color: #d32f2f;
             box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
         }
 
-        .vehicle-success {
-            animation: successPulse 0.5s ease;
+        .modal-footer {
+            display: flex;
+            gap: 0.8rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #444;
         }
 
-        @keyframes successPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .modal-btn {
+            flex: 1;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .modal-btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+
+        .modal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #666;
+        }
+
+        .modal-btn-save {
+            background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(211, 47, 47, 0.4);
+        }
+
+        .modal-btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.5);
+        }
+
+        /* Toast notification */
+        .vehicle-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 10001;
+            animation: toastSlideIn 0.3s ease;
+        }
+
+        .vehicle-toast.hidden {
+            display: none;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
         }
 
         @media (max-width: 768px) {
@@ -380,67 +561,28 @@
         </div>
 
         <div class="welcome-message">
-            <h2>Welcome back, <span id="userName">User</span>!</h2>
-            <p>Manage your subscription and view your usage statistics below.</p>
+            <div class="welcome-content">
+                <div class="welcome-text">
+                    <h2>Welcome back, <span id="userName">User</span>!</h2>
+                    <p>Manage your subscription and view your usage statistics below.</p>
+                </div>
+                <div class="welcome-vehicle-icon">
+                    🚗
+                </div>
+            </div>
         </div>
 
         <div class="dashboard-grid">
             <!-- My Vehicle Card -->
             <div class="card">
                 <div class="card-title">My Vehicle</div>
-                <div id="vehicleDisplay" class="vehicle-display">
-                    <div class="vehicle-icon-large">🚗</div>
+                <div id="vehicleDisplay" class="vehicle-display-compact">
                     <p class="vehicle-text" id="vehicleText">No vehicle selected</p>
                     <p class="vehicle-hint">Select your vehicle for personalized advice</p>
-                </div>
-                <div id="vehicleSelector" class="vehicle-selector-compact" style="display: none;">
-                    <select id="dash-car-year" class="vehicle-input">
-                        <option value="">Year</option>
-                    </select>
-                    <select id="dash-car-make" class="vehicle-input">
-                        <option value="">Make</option>
-                    </select>
-                    <select id="dash-car-model" class="vehicle-input">
-                        <option value="">Model</option>
-                    </select>
-                    <select id="dash-engine-type" class="vehicle-input">
-                        <option value="">Engine Type</option>
-                        <option value="Petrol">Petrol</option>
-                        <option value="Diesel">Diesel</option>
-                        <option value="Hybrid">Hybrid</option>
-                        <option value="Plug-in Hybrid">Plug-in Hybrid</option>
-                        <option value="Electric">Electric</option>
-                    </select>
-                    <select id="dash-engine-size" class="vehicle-input">
-                        <option value="">Engine Size</option>
-                        <option value="1.0L">1.0L</option>
-                        <option value="1.2L">1.2L</option>
-                        <option value="1.4L">1.4L</option>
-                        <option value="1.5L">1.5L</option>
-                        <option value="1.6L">1.6L</option>
-                        <option value="1.8L">1.8L</option>
-                        <option value="2.0L">2.0L</option>
-                        <option value="2.2L">2.2L</option>
-                        <option value="2.4L">2.4L</option>
-                        <option value="2.5L">2.5L</option>
-                        <option value="2.7L">2.7L</option>
-                        <option value="3.0L">3.0L</option>
-                        <option value="3.5L">3.5L</option>
-                        <option value="3.6L">3.6L</option>
-                        <option value="4.0L">4.0L</option>
-                        <option value="4.6L">4.6L</option>
-                        <option value="5.0L">5.0L</option>
-                        <option value="5.3L">5.3L</option>
-                        <option value="5.7L">5.7L</option>
-                        <option value="6.2L">6.2L</option>
-                    </select>
                 </div>
                 <div class="action-buttons">
                     <button class="action-btn action-btn-primary" id="changeVehicleBtn">
                         <span id="changeVehicleBtnText">Select Vehicle</span>
-                    </button>
-                    <button class="action-btn action-btn-outline" id="saveVehicleBtn" style="display: none;">
-                        Save Vehicle
                     </button>
                     <button class="action-btn action-btn-outline" onclick="window.location.href='/chat'">
                         💬 Start Chat
@@ -464,7 +606,7 @@
                 </div>
             </div>
 
-            <!-- Usage Card -->
+            <!-- Usage Card with Quick Actions -->
             <div class="card">
                 <div class="card-title">Message Usage</div>
                 <div class="stat-grid">
@@ -486,11 +628,8 @@
                         <div class="progress-fill" id="progressFill" style="width: 0%"></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Quick Actions Card -->
-            <div class="card">
-                <div class="card-title">Quick Actions</div>
+                <div class="card-divider"></div>
+                <div class="card-subtitle">Quick Actions</div>
                 <div class="action-buttons">
                     <button class="action-btn action-btn-primary" onclick="window.location.href='/chat'">
                         💬 Start Chat
@@ -746,18 +885,24 @@
 
         const vehicleDisplay = document.getElementById('vehicleDisplay');
         const vehicleText = document.getElementById('vehicleText');
-        const vehicleSelector = document.getElementById('vehicleSelector');
         const changeVehicleBtn = document.getElementById('changeVehicleBtn');
-        const saveVehicleBtn = document.getElementById('saveVehicleBtn');
         const changeVehicleBtnText = document.getElementById('changeVehicleBtnText');
 
-        const dashCarYear = document.getElementById('dash-car-year');
-        const dashCarMake = document.getElementById('dash-car-make');
-        const dashCarModel = document.getElementById('dash-car-model');
-        const dashEngineType = document.getElementById('dash-engine-type');
-        const dashEngineSize = document.getElementById('dash-engine-size');
+        // Modal elements
+        const vehicleModal = document.getElementById('vehicleModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const saveModalBtn = document.getElementById('saveModalBtn');
+        const vehicleToast = document.getElementById('vehicleToast');
+        const toastMessage = document.getElementById('toastMessage');
 
-        // Initialize vehicle selectors
+        const modalCarYear = document.getElementById('modal-car-year');
+        const modalCarMake = document.getElementById('modal-car-make');
+        const modalCarModel = document.getElementById('modal-car-model');
+        const modalEngineType = document.getElementById('modal-engine-type');
+        const modalEngineSize = document.getElementById('modal-engine-size');
+
+        // Initialize modal vehicle selectors
         function initDashboardVehicleSelectors() {
             // Populate year dropdown
             const currentYear = new Date().getFullYear();
@@ -765,7 +910,7 @@
                 const option = document.createElement('option');
                 option.value = year;
                 option.textContent = year;
-                dashCarYear.appendChild(option);
+                modalCarYear.appendChild(option);
             }
 
             // Populate make dropdown
@@ -773,19 +918,19 @@
                 const option = document.createElement('option');
                 option.value = make;
                 option.textContent = make;
-                dashCarMake.appendChild(option);
+                modalCarMake.appendChild(option);
             });
 
             // Update model dropdown when make changes
-            dashCarMake.addEventListener('change', function() {
-                dashCarModel.innerHTML = '<option value="">Model</option>';
+            modalCarMake.addEventListener('change', function() {
+                modalCarModel.innerHTML = '<option value="">Model</option>';
                 const selectedMake = this.value;
                 if (selectedMake && carModels[selectedMake]) {
                     carModels[selectedMake].forEach(model => {
                         const option = document.createElement('option');
                         option.value = model;
                         option.textContent = model;
-                        dashCarModel.appendChild(option);
+                        modalCarModel.appendChild(option);
                     });
                 }
             });
@@ -823,47 +968,48 @@
             changeVehicleBtnText.textContent = 'Change Vehicle';
         }
 
-        // Toggle vehicle selector
-        changeVehicleBtn.addEventListener('click', function() {
-            const isVisible = vehicleSelector.style.display !== 'none';
-
-            if (isVisible) {
-                // Hide selector
-                vehicleSelector.style.display = 'none';
-                saveVehicleBtn.style.display = 'none';
-                vehicleDisplay.style.display = 'block';
-            } else {
-                // Show selector
-                vehicleDisplay.style.display = 'none';
-                vehicleSelector.style.display = 'flex';
-                saveVehicleBtn.style.display = 'block';
-
-                // Load current values
-                const saved = localStorage.getItem('myMechanic_vehiclePreset');
-                if (saved) {
-                    const preset = JSON.parse(saved);
-                    if (dashCarYear && preset.year) dashCarYear.value = preset.year;
-                    if (dashCarMake && preset.make) {
-                        dashCarMake.value = preset.make;
-                        dashCarMake.dispatchEvent(new Event('change'));
-                        setTimeout(() => {
-                            if (dashCarModel && preset.model) dashCarModel.value = preset.model;
-                        }, 50);
-                    }
-                    if (dashEngineType && preset.engineType) dashEngineType.value = preset.engineType;
-                    if (dashEngineSize && preset.engineSize) dashEngineSize.value = preset.engineSize;
+        // Open modal
+        function openVehicleModal() {
+            // Load current values
+            const saved = localStorage.getItem('myMechanic_vehiclePreset');
+            if (saved) {
+                const preset = JSON.parse(saved);
+                if (modalCarYear) modalCarYear.value = preset.year || '';
+                if (modalCarMake && preset.make) {
+                    modalCarMake.value = preset.make;
+                    modalCarMake.dispatchEvent(new Event('change'));
+                    setTimeout(() => {
+                        if (modalCarModel) modalCarModel.value = preset.model || '';
+                    }, 50);
                 }
+                if (modalEngineType) modalEngineType.value = preset.engineType || '';
+                if (modalEngineSize) modalEngineSize.value = preset.engineSize || '';
             }
-        });
+            vehicleModal.classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeVehicleModal() {
+            vehicleModal.classList.add('hidden');
+        }
+
+        // Show toast
+        function showToast(message) {
+            toastMessage.textContent = message;
+            vehicleToast.classList.remove('hidden');
+            setTimeout(() => {
+                vehicleToast.classList.add('hidden');
+            }, 3000);
+        }
 
         // Save vehicle
-        saveVehicleBtn.addEventListener('click', function() {
+        function saveVehicleChanges() {
             const vehicle = {
-                year: dashCarYear.value,
-                make: dashCarMake.value,
-                model: dashCarModel.value,
-                engineType: dashEngineType.value,
-                engineSize: dashEngineSize.value,
+                year: modalCarYear.value,
+                make: modalCarMake.value,
+                model: modalCarModel.value,
+                engineType: modalEngineType.value,
+                engineSize: modalEngineSize.value,
                 timestamp: Date.now()
             };
 
@@ -874,29 +1020,40 @@
                 // Update display
                 updateVehicleDisplay(vehicle);
 
-                // Hide selector
-                vehicleSelector.style.display = 'none';
-                saveVehicleBtn.style.display = 'none';
-                vehicleDisplay.style.display = 'block';
+                // Close modal
+                closeVehicleModal();
 
-                // Success animation
-                vehicleDisplay.classList.add('vehicle-success');
-                setTimeout(() => {
-                    vehicleDisplay.classList.remove('vehicle-success');
-                }, 500);
+                // Show success toast
+                const parts = [];
+                if (vehicle.year) parts.push(vehicle.year);
+                if (vehicle.make) parts.push(vehicle.make);
+                if (vehicle.model) parts.push(vehicle.model);
 
-                // Show success message
-                const originalText = vehicleText.textContent;
-                vehicleText.textContent = '✓ Vehicle Saved!';
-                vehicleText.style.color = '#4caf50';
-                setTimeout(() => {
-                    vehicleText.textContent = originalText;
-                    vehicleText.style.color = '#e0e0e0';
-                }, 2000);
+                showToast(`Vehicle saved: ${parts.join(' ') || 'No vehicle'}`);
 
             } catch (error) {
                 console.error('[Dashboard Vehicle] Failed to save:', error);
                 alert('Failed to save vehicle. Please try again.');
+            }
+        }
+
+        // Event listeners
+        changeVehicleBtn.addEventListener('click', openVehicleModal);
+        closeModalBtn.addEventListener('click', closeVehicleModal);
+        cancelModalBtn.addEventListener('click', closeVehicleModal);
+        saveModalBtn.addEventListener('click', saveVehicleChanges);
+
+        // Close modal on outside click
+        vehicleModal.addEventListener('click', function(e) {
+            if (e.target === vehicleModal) {
+                closeVehicleModal();
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !vehicleModal.classList.contains('hidden')) {
+                closeVehicleModal();
             }
         });
 
@@ -904,5 +1061,73 @@
         initDashboardVehicleSelectors();
         loadDashboardVehicle();
     </script>
+
+    <!-- Vehicle Selection Modal -->
+    <div id="vehicleModal" class="vehicle-modal hidden">
+        <div class="vehicle-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Select Your Vehicle</h2>
+                <button class="modal-close" id="closeModalBtn" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4 L16 16 M16 4 L4 16" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-vehicle-selector">
+                    <select id="modal-car-year" class="modal-vehicle-input">
+                        <option value="">Year</option>
+                    </select>
+                    <select id="modal-car-make" class="modal-vehicle-input">
+                        <option value="">Make</option>
+                    </select>
+                    <select id="modal-car-model" class="modal-vehicle-input">
+                        <option value="">Model</option>
+                    </select>
+                    <select id="modal-engine-type" class="modal-vehicle-input">
+                        <option value="">Engine Type</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Hybrid">Hybrid</option>
+                        <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                        <option value="Electric">Electric</option>
+                    </select>
+                    <select id="modal-engine-size" class="modal-vehicle-input">
+                        <option value="">Engine Size</option>
+                        <option value="1.0L">1.0L</option>
+                        <option value="1.2L">1.2L</option>
+                        <option value="1.4L">1.4L</option>
+                        <option value="1.5L">1.5L</option>
+                        <option value="1.6L">1.6L</option>
+                        <option value="1.8L">1.8L</option>
+                        <option value="2.0L">2.0L</option>
+                        <option value="2.2L">2.2L</option>
+                        <option value="2.4L">2.4L</option>
+                        <option value="2.5L">2.5L</option>
+                        <option value="2.7L">2.7L</option>
+                        <option value="3.0L">3.0L</option>
+                        <option value="3.5L">3.5L</option>
+                        <option value="3.6L">3.6L</option>
+                        <option value="4.0L">4.0L</option>
+                        <option value="4.6L">4.6L</option>
+                        <option value="5.0L">5.0L</option>
+                        <option value="5.3L">5.3L</option>
+                        <option value="5.7L">5.7L</option>
+                        <option value="6.2L">6.2L</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="cancelModalBtn">Cancel</button>
+                <button class="modal-btn modal-btn-save" id="saveModalBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="vehicleToast" class="vehicle-toast hidden">
+        <span id="toastMessage"></span>
+    </div>
+
 </body>
 </html>

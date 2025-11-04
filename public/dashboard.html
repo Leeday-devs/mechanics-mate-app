@@ -573,20 +573,19 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- My Vehicle Card -->
+            <!-- Subscription Card -->
             <div class="card">
-                <div class="card-title">My Vehicle</div>
-                <div id="vehicleDisplay" class="vehicle-display-compact">
-                    <p class="vehicle-text" id="vehicleText">No vehicle selected</p>
-                    <p class="vehicle-hint">Select your vehicle for personalized advice</p>
+                <div class="card-title">Current Plan</div>
+                <div id="planBadge" class="plan-badge">Loading...</div>
+                <div class="plan-info" id="planInfo">
+                    <p>Loading subscription details...</p>
                 </div>
                 <div class="action-buttons">
-                    <button class="action-btn action-btn-primary" id="changeVehicleBtn">
-                        <span id="changeVehicleBtnText">Select Vehicle</span>
+                    <button class="action-btn action-btn-primary" id="managePlanBtn">Manage Subscription</button>
+                    <button class="action-btn action-btn-outline" id="viewLogsBtn" style="display: none;" onclick="window.location.href='/admin.html'">
+                        📋 View Application Logs
                     </button>
-                    <button class="action-btn action-btn-outline" onclick="window.location.href='/chat'">
-                        💬 Start Chat
-                    </button>
+                    <button class="action-btn action-btn-outline" onclick="window.location.href='/pricing.html'">Change Plan</button>
                 </div>
             </div>
 
@@ -627,19 +626,20 @@
                 </div>
             </div>
 
-            <!-- Subscription Card -->
+            <!-- My Vehicle Card -->
             <div class="card">
-                <div class="card-title">Current Plan</div>
-                <div id="planBadge" class="plan-badge">Loading...</div>
-                <div class="plan-info" id="planInfo">
-                    <p>Loading subscription details...</p>
+                <div class="card-title">My Vehicle</div>
+                <div id="vehicleDisplay" class="vehicle-display-compact">
+                    <p class="vehicle-text" id="vehicleText">No vehicle selected</p>
+                    <p class="vehicle-hint">Select your vehicle for personalized advice</p>
                 </div>
                 <div class="action-buttons">
-                    <button class="action-btn action-btn-primary" id="managePlanBtn">Manage Subscription</button>
-                    <button class="action-btn action-btn-outline" id="viewLogsBtn" style="display: none;" onclick="window.location.href='/admin.html'">
-                        📋 View Application Logs
+                    <button class="action-btn action-btn-primary" id="changeVehicleBtn">
+                        <span id="changeVehicleBtnText">Select Vehicle</span>
                     </button>
-                    <button class="action-btn action-btn-outline" onclick="window.location.href='/pricing.html'">Change Plan</button>
+                    <button class="action-btn action-btn-outline" onclick="window.location.href='/chat'">
+                        💬 Start Chat
+                    </button>
                 </div>
             </div>
         </div>

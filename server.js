@@ -302,74 +302,12 @@ function withTimeout(promise, timeoutMs, timeoutMessage = 'Operation timed out')
 }
 
 // Function to search UK automotive forums for relevant information using Firecrawl
+// TEMPORARILY DISABLED: Causing 504 timeouts on Netlify
 async function searchForums(vehicleInfo, userQuestion) {
-    try {
-        // Check if Firecrawl API key is configured
-        const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
-
-        if (!firecrawlApiKey) {
-            console.log('Firecrawl API not configured, skipping forum search');
-            return null;
-        }
-
-        // Initialize Firecrawl client
-        const firecrawl = new FirecrawlApp({ apiKey: firecrawlApiKey });
-
-        // Build search query targeting popular UK car forums
-        const searchQuery = `${vehicleInfo} ${userQuestion}`;
-
-        // Target UK automotive forums
-        const targetSites = [
-            'pistonheads.com',
-            'honestjohn.co.uk',
-            'reddit.com/r/CarTalkUK',
-            'reddit.com/r/MechanicAdvice',
-            'ukworkshop.co.uk'
-        ];
-
-        console.log(`🔍 Searching forums for: ${searchQuery}`);
-
-        // Use Firecrawl search with limited results and timeout (3 seconds max)
-        const searchResults = await withTimeout(
-            firecrawl.search(searchQuery, {
-                limit: 3, // Reduced from 5 to speed up search
-                scrapeOptions: {
-                    formats: ['markdown']
-                }
-            }),
-            3000, // 3 second timeout
-            'Forum search timed out'
-        );
-
-        if (searchResults && searchResults.data && searchResults.data.length > 0) {
-            // Filter results to only include our target UK forums
-            const filteredResults = searchResults.data.filter(item => {
-                const url = item.url || '';
-                return targetSites.some(site => url.includes(site));
-            });
-
-            // Extract relevant snippets from search results
-            const forumResults = filteredResults.slice(0, 3).map(item => ({
-                title: item.title || 'Forum Discussion',
-                snippet: item.description || item.markdown?.substring(0, 250) || '',
-                link: item.url || ''
-            }));
-
-            console.log(`✅ Found ${forumResults.length} relevant forum results`);
-            return forumResults.length > 0 ? forumResults : null;
-        }
-
-        console.log('ℹ️ No forum results found');
-        return null;
-    } catch (error) {
-        // If search times out or fails, just skip it - don't break the chat
-        if (error.message.includes('timed out')) {
-            console.log('⏱️ Forum search timed out, skipping');
-        } else {
-            console.error('Forum search error:', error.message);
-        }
-        return null;
-    }
+    // Skip forum search to prevent 504 errors
+    // TODO: Re-enable after implementing async background job or caching
+    console.log('ℹ️ Forum search temporarily disabled to prevent timeouts');
+    return null;
 }
 
 // Chat endpoint - now requires authentication and active subscription

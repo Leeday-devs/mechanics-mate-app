@@ -163,15 +163,15 @@ if (uniquePriceIds.size !== priceIds.length) {
 console.log('✅ Environment validation passed');
 
 // Import routes and middleware
-const authRoutes = require('./src/routes/auth');
-const subscriptionRoutes = require('./src/routes/subscriptions');
-const adminRoutes = require('./src/routes/admin');
-const logsRoutes = require('./src/routes/logs');
-const { authenticateToken, requireSubscription } = require('./src/middleware/auth');
-const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./src/middleware/logger');
-const { checkQuota, incrementQuota, logMessage } = require('./src/utils/quota');
-const logger = require('./src/lib/logger');
-const { supabaseAdmin } = require('./src/lib/supabase');
+const authRoutes = require('./routes/auth');
+const subscriptionRoutes = require('./routes/subscriptions');
+const adminRoutes = require('./routes/admin');
+const logsRoutes = require('./routes/logs');
+const { authenticateToken, requireSubscription } = require('./middleware/auth');
+const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./middleware/logger');
+const { checkQuota, incrementQuota, logMessage } = require('./utils/quota');
+const logger = require('./lib/logger');
+const { supabaseAdmin } = require('./lib/supabase');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

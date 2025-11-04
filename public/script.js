@@ -522,8 +522,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove typing indicator
             hideTypingIndicator();
 
-            // Add assistant message to chat
-            addMessageToChat('assistant', data.response);
+            // Add assistant message to chat with typewriter effect
+            addMessageToChat('assistant', data.response, true);
 
         } catch (error) {
             console.error('Error:', error);
@@ -613,24 +613,119 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function addMessageToChat(type, content) {
+    function addMessageToChat(type, content, useTypewriter = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
 
-        // Convert markdown-style formatting to HTML
-        const formattedContent = formatMessage(content);
-        contentDiv.innerHTML = formattedContent;
-
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
 
-        // Scroll to bottom smoothly
-        setTimeout(() => {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 100);
+        if (useTypewriter && type === 'assistant') {
+            // Use typewriter effect for assistant messages
+            typewriterEffect(contentDiv, content);
+        } else {
+            // Convert markdown-style formatting to HTML
+            const formattedContent = formatMessage(content);
+            contentDiv.innerHTML = formattedContent;
+
+            // Scroll to bottom smoothly
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        }
+    }
+
+    // Typewriter effect function
+    function typewriterEffect(element, text) {
+        // Format the message first
+        const formattedContent = formatMessage(text);
+
+        // Create a temporary div to parse the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = formattedContent;
+
+        // Clear the element
+        element.innerHTML = '';
+
+        // Get all nodes to type
+        const nodes = Array.from(tempDiv.childNodes);
+        let currentNodeIndex = 0;
+        let currentCharIndex = 0;
+        let currentElement = null;
+
+        // Speed settings (in milliseconds)
+        const typingSpeed = 15; // Speed per character
+
+        function typeNextChar() {
+            // If we've finished all nodes, we're done
+            if (currentNodeIndex >= nodes.length) {
+                return;
+            }
+
+            const node = nodes[currentNodeIndex];
+
+            // Handle text nodes
+            if (node.nodeType === Node.TEXT_NODE) {
+                if (!currentElement) {
+                    currentElement = document.createTextNode('');
+                    element.appendChild(currentElement);
+                }
+
+                if (currentCharIndex < node.textContent.length) {
+                    currentElement.textContent += node.textContent[currentCharIndex];
+                    currentCharIndex++;
+
+                    // Scroll to bottom as we type
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    setTimeout(typeNextChar, typingSpeed);
+                } else {
+                    // Move to next node
+                    currentNodeIndex++;
+                    currentCharIndex = 0;
+                    currentElement = null;
+                    typeNextChar();
+                }
+            }
+            // Handle element nodes (like <strong>, <code>, <br>, etc.)
+            else if (node.nodeType === Node.ELEMENT_NODE) {
+                if (!currentElement) {
+                    currentElement = node.cloneNode(false); // Clone without children
+                    element.appendChild(currentElement);
+                }
+
+                // Type the content of this element
+                const textContent = node.textContent;
+                if (currentCharIndex < textContent.length) {
+                    currentElement.textContent += textContent[currentCharIndex];
+                    currentCharIndex++;
+
+                    // Scroll to bottom as we type
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    setTimeout(typeNextChar, typingSpeed);
+                } else {
+                    // Move to next node
+                    currentNodeIndex++;
+                    currentCharIndex = 0;
+                    currentElement = null;
+                    typeNextChar();
+                }
+            }
+            else {
+                // Skip unknown node types
+                currentNodeIndex++;
+                currentCharIndex = 0;
+                currentElement = null;
+                typeNextChar();
+            }
+        }
+
+        // Start typing
+        typeNextChar();
     }
 
     // Add typing indicator

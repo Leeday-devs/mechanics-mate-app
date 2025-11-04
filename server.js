@@ -325,7 +325,7 @@ app.post(
         body('conversationHistory')
             .optional()
             .isArray().withMessage('Conversation history must be an array')
-            .custom(arr => arr.length <= 50).withMessage('Conversation history is too long. Please start a new conversation.')
+            .custom(arr => arr.length <= 20).withMessage('Conversation history is too long. Please start a new conversation.')
     ],
     validateRequest,
     async (req, res) => {
@@ -348,9 +348,10 @@ app.post(
             });
         }
 
-        // Build messages array for Claude
+        // Build messages array for Claude - limit to last 10 messages to prevent timeouts
+        const recentHistory = conversationHistory.slice(-10);
         const messages = [
-            ...conversationHistory,
+            ...recentHistory,
             {
                 role: 'user',
                 content: message
@@ -444,13 +445,17 @@ IMPORTANT SAFETY RULES:
 
 Be thorough, accurate, and always prioritise the user's safety. When in doubt, recommend consulting a qualified UK mechanic or approved dealer.`;
 
-        // Call Claude API
-        const response = await anthropic.messages.create({
-            model: 'claude-sonnet-4-5-20250929',
-            max_tokens: 4096, // Increased for more detailed responses
-            system: systemPrompt,
-            messages: messages
-        });
+        // Call Claude API with timeout (8 seconds max - leaves 2s buffer for Netlify's 10s limit)
+        const response = await withTimeout(
+            anthropic.messages.create({
+                model: 'claude-sonnet-4-5-20250929',
+                max_tokens: 4096, // Increased for more detailed responses
+                system: systemPrompt,
+                messages: messages
+            }),
+            8000, // 8 second timeout
+            'Claude API request timed out'
+        );
 
         // Extract the response text
         const assistantMessage = response.content[0].text;
@@ -476,15 +481,18 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
             message: `Chat message processed (${inputTokens} input + ${outputTokens} output tokens)`
         }).catch(err => console.error('Failed to log chat:', err));
 
+        // Build updated conversation history (keep only recent messages to prevent future timeouts)
+        const updatedHistory = [
+            ...messages,
+            {
+                role: 'assistant',
+                content: assistantMessage
+            }
+        ].slice(-10); // Keep only last 10 messages
+
         res.json({
             response: assistantMessage,
-            conversationHistory: [
-                ...messages,
-                {
-                    role: 'assistant',
-                    content: assistantMessage
-                }
-            ],
+            conversationHistory: updatedHistory,
             quota: {
                 remaining: quotaCheck.remaining - 1,
                 limit: quotaCheck.limit,

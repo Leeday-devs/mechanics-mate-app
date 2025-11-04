@@ -1,12 +1,13 @@
 // Car Mechanic Service Worker
-// Version 1.0.0
+// Version 1.1.0
 
-const CACHE_NAME = 'my-mechanic-v1';
-const RUNTIME_CACHE = 'my-mechanic-runtime-v1';
+const CACHE_NAME = 'my-mechanic-v2';
+const RUNTIME_CACHE = 'my-mechanic-runtime-v2';
 
 // Files to cache on install
 const STATIC_ASSETS = [
     '/',
+    '/landing.html',
     '/index.html',
     '/style.css',
     '/script.js',
@@ -117,9 +118,22 @@ self.addEventListener('fetch', (event) => {
             .catch((error) => {
                 console.error('[Service Worker] Fetch failed:', error);
 
-                // If this is a navigation request, return the cached index.html
+                // If this is a navigation request, return the appropriate cached page
                 if (request.mode === 'navigate') {
-                    return caches.match('/index.html');
+                    const url = new URL(request.url);
+
+                    // Root path should return landing page
+                    if (url.pathname === '/' || url.pathname === '/landing' || url.pathname === '/landing.html') {
+                        return caches.match('/landing.html');
+                    }
+
+                    // Chat/app routes should return the chat interface
+                    if (url.pathname === '/chat' || url.pathname === '/app' || url.pathname === '/index.html') {
+                        return caches.match('/index.html');
+                    }
+
+                    // Default fallback to landing page for unknown routes
+                    return caches.match('/landing.html');
                 }
 
                 // For other requests, return a generic error

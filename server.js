@@ -325,7 +325,7 @@ app.post(
         body('conversationHistory')
             .optional()
             .isArray().withMessage('Conversation history must be an array')
-            .custom(arr => arr.length <= 20).withMessage('Conversation history is too long. Please start a new conversation.')
+            .custom(arr => arr.length <= 12).withMessage('Conversation history is too long. Please start a new conversation.')
     ],
     validateRequest,
     async (req, res) => {
@@ -348,8 +348,8 @@ app.post(
             });
         }
 
-        // Build messages array for Claude - limit to last 10 messages to prevent timeouts
-        const recentHistory = conversationHistory.slice(-10);
+        // Build messages array for Claude - limit to last 6 messages (3 exchanges) for optimal performance
+        const recentHistory = conversationHistory.slice(-6);
         const messages = [
             ...recentHistory,
             {
@@ -481,14 +481,14 @@ Be thorough, accurate, and always prioritise the user's safety. When in doubt, r
             message: `Chat message processed (${inputTokens} input + ${outputTokens} output tokens)`
         }).catch(err => console.error('Failed to log chat:', err));
 
-        // Build updated conversation history (keep only recent messages to prevent future timeouts)
+        // Build updated conversation history (keep only last 6 messages for optimal performance)
         const updatedHistory = [
             ...messages,
             {
                 role: 'assistant',
                 content: assistantMessage
             }
-        ].slice(-10); // Keep only last 10 messages
+        ].slice(-6); // Keep only last 6 messages (3 exchanges)
 
         res.json({
             response: assistantMessage,

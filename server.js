@@ -445,17 +445,13 @@ IMPORTANT SAFETY RULES:
 
 Be thorough, accurate, and always prioritise the user's safety. When in doubt, recommend consulting a qualified UK mechanic or approved dealer.`;
 
-        // Call Claude API with timeout (8 seconds max - leaves 2s buffer for Netlify's 10s limit)
-        const response = await withTimeout(
-            anthropic.messages.create({
-                model: 'claude-sonnet-4-5-20250929',
-                max_tokens: 4096, // Increased for more detailed responses
-                system: systemPrompt,
-                messages: messages
-            }),
-            8000, // 8 second timeout
-            'Claude API request timed out'
-        );
+        // Call Claude API (no timeout - let Netlify's 10s limit handle it)
+        const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-5-20250929',
+            max_tokens: 4096, // Increased for more detailed responses
+            system: systemPrompt,
+            messages: messages
+        });
 
         // Extract the response text
         const assistantMessage = response.content[0].text;

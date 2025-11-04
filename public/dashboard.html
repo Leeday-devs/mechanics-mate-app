@@ -645,6 +645,73 @@
         </div>
     </div>
 
+    <!-- Vehicle Selection Modal -->
+    <div id="vehicleModal" class="vehicle-modal hidden">
+        <div class="vehicle-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Select Your Vehicle</h2>
+                <button class="modal-close" id="closeModalBtn" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4 L16 16 M16 4 L4 16" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-vehicle-selector">
+                    <select id="modal-car-year" class="modal-vehicle-input">
+                        <option value="">Year</option>
+                    </select>
+                    <select id="modal-car-make" class="modal-vehicle-input">
+                        <option value="">Make</option>
+                    </select>
+                    <select id="modal-car-model" class="modal-vehicle-input">
+                        <option value="">Model</option>
+                    </select>
+                    <select id="modal-engine-type" class="modal-vehicle-input">
+                        <option value="">Engine Type</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Hybrid">Hybrid</option>
+                        <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                        <option value="Electric">Electric</option>
+                    </select>
+                    <select id="modal-engine-size" class="modal-vehicle-input">
+                        <option value="">Engine Size</option>
+                        <option value="1.0L">1.0L</option>
+                        <option value="1.2L">1.2L</option>
+                        <option value="1.4L">1.4L</option>
+                        <option value="1.5L">1.5L</option>
+                        <option value="1.6L">1.6L</option>
+                        <option value="1.8L">1.8L</option>
+                        <option value="2.0L">2.0L</option>
+                        <option value="2.2L">2.2L</option>
+                        <option value="2.4L">2.4L</option>
+                        <option value="2.5L">2.5L</option>
+                        <option value="2.7L">2.7L</option>
+                        <option value="3.0L">3.0L</option>
+                        <option value="3.5L">3.5L</option>
+                        <option value="3.6L">3.6L</option>
+                        <option value="4.0L">4.0L</option>
+                        <option value="4.6L">4.6L</option>
+                        <option value="5.0L">5.0L</option>
+                        <option value="5.3L">5.3L</option>
+                        <option value="5.7L">5.7L</option>
+                        <option value="6.2L">6.2L</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="cancelModalBtn">Cancel</button>
+                <button class="modal-btn modal-btn-save" id="saveModalBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="vehicleToast" class="vehicle-toast hidden">
+        <span id="toastMessage"></span>
+    </div>
+
     <script>
         const loadingOverlay = document.getElementById('loadingOverlay');
         const userName = document.getElementById('userName');
@@ -1061,73 +1128,6 @@
         initDashboardVehicleSelectors();
         loadDashboardVehicle();
     </script>
-
-    <!-- Vehicle Selection Modal -->
-    <div id="vehicleModal" class="vehicle-modal hidden">
-        <div class="vehicle-modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Select Your Vehicle</h2>
-                <button class="modal-close" id="closeModalBtn" aria-label="Close">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 4 L16 16 M16 4 L4 16" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-vehicle-selector">
-                    <select id="modal-car-year" class="modal-vehicle-input">
-                        <option value="">Year</option>
-                    </select>
-                    <select id="modal-car-make" class="modal-vehicle-input">
-                        <option value="">Make</option>
-                    </select>
-                    <select id="modal-car-model" class="modal-vehicle-input">
-                        <option value="">Model</option>
-                    </select>
-                    <select id="modal-engine-type" class="modal-vehicle-input">
-                        <option value="">Engine Type</option>
-                        <option value="Petrol">Petrol</option>
-                        <option value="Diesel">Diesel</option>
-                        <option value="Hybrid">Hybrid</option>
-                        <option value="Plug-in Hybrid">Plug-in Hybrid</option>
-                        <option value="Electric">Electric</option>
-                    </select>
-                    <select id="modal-engine-size" class="modal-vehicle-input">
-                        <option value="">Engine Size</option>
-                        <option value="1.0L">1.0L</option>
-                        <option value="1.2L">1.2L</option>
-                        <option value="1.4L">1.4L</option>
-                        <option value="1.5L">1.5L</option>
-                        <option value="1.6L">1.6L</option>
-                        <option value="1.8L">1.8L</option>
-                        <option value="2.0L">2.0L</option>
-                        <option value="2.2L">2.2L</option>
-                        <option value="2.4L">2.4L</option>
-                        <option value="2.5L">2.5L</option>
-                        <option value="2.7L">2.7L</option>
-                        <option value="3.0L">3.0L</option>
-                        <option value="3.5L">3.5L</option>
-                        <option value="3.6L">3.6L</option>
-                        <option value="4.0L">4.0L</option>
-                        <option value="4.6L">4.6L</option>
-                        <option value="5.0L">5.0L</option>
-                        <option value="5.3L">5.3L</option>
-                        <option value="5.7L">5.7L</option>
-                        <option value="6.2L">6.2L</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-cancel" id="cancelModalBtn">Cancel</button>
-                <button class="modal-btn modal-btn-save" id="saveModalBtn">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="vehicleToast" class="vehicle-toast hidden">
-        <span id="toastMessage"></span>
-    </div>
 
 </body>
 </html>

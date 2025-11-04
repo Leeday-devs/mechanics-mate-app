@@ -20,7 +20,7 @@ const STATIC_ASSETS = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-    console.log('[Service Worker] Installing...');
+    console.log('[Service Worker] Installing v2...');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
@@ -33,7 +33,8 @@ self.addEventListener('install', (event) => {
                     });
             })
             .then(() => {
-                console.log('[Service Worker] Skip waiting');
+                console.log('[Service Worker] Skip waiting - force immediate activation');
+                // Force this service worker to take control immediately
                 return self.skipWaiting();
             })
     );
@@ -41,13 +42,13 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('[Service Worker] Activating...');
+    console.log('[Service Worker] Activating v2...');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames
                     .filter((cacheName) => {
-                        // Delete old caches
+                        // Delete old caches (v1 and any other old versions)
                         return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
                     })
                     .map((cacheName) => {
@@ -56,8 +57,20 @@ self.addEventListener('activate', (event) => {
                     })
             );
         }).then(() => {
-            console.log('[Service Worker] Claiming clients');
+            console.log('[Service Worker] Claiming all clients immediately');
+            // Take control of all pages immediately, even those loaded with old SW
             return self.clients.claim();
+        }).then(() => {
+            // Notify all clients to reload
+            return self.clients.matchAll().then((clients) => {
+                clients.forEach((client) => {
+                    console.log('[Service Worker] Notifying client to reload:', client.url);
+                    client.postMessage({
+                        type: 'SW_UPDATED',
+                        message: 'Service worker updated to v2'
+                    });
+                });
+            });
         })
     );
 });

@@ -1056,5 +1056,54 @@
             <p>&copy; 2025 Car Mechanic. All rights reserved. Powered by Claude AI from Anthropic.</p>
         </div>
     </footer>
+
+    <!-- Force Service Worker Update and Cache Clear -->
+    <script>
+        // One-time fix for service worker routing issue
+        (function() {
+            const SW_FIX_KEY = 'sw_fix_applied_v2';
+            const fixAlreadyApplied = localStorage.getItem(SW_FIX_KEY);
+
+            if (!fixAlreadyApplied && 'serviceWorker' in navigator) {
+                console.log('[Landing] Applying service worker fix...');
+
+                // Unregister ALL service workers
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    const unregisterPromises = registrations.map(reg => {
+                        console.log('[Landing] Unregistering service worker:', reg.scope);
+                        return reg.unregister();
+                    });
+
+                    Promise.all(unregisterPromises).then(() => {
+                        console.log('[Landing] All service workers unregistered');
+
+                        // Clear all caches
+                        if ('caches' in window) {
+                            caches.keys().then(function(cacheNames) {
+                                return Promise.all(
+                                    cacheNames.map(function(cacheName) {
+                                        console.log('[Landing] Deleting cache:', cacheName);
+                                        return caches.delete(cacheName);
+                                    })
+                                );
+                            }).then(() => {
+                                console.log('[Landing] All caches cleared');
+                                // Mark fix as applied
+                                localStorage.setItem(SW_FIX_KEY, 'true');
+                                // Reload page to get fresh service worker
+                                console.log('[Landing] Reloading page...');
+                                window.location.reload(true);
+                            });
+                        } else {
+                            localStorage.setItem(SW_FIX_KEY, 'true');
+                            window.location.reload(true);
+                        }
+                    });
+                });
+            } else if (fixAlreadyApplied) {
+                console.log('[Landing] Service worker fix already applied');
+            }
+        })();
+    </script>
 </body>
 </html>

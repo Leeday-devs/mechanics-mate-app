@@ -298,6 +298,14 @@
             opacity: 0.9;
         }
 
+        .welcome-vehicle-image {
+            width: 120px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 8px;
+            opacity: 0.9;
+        }
+
         /* Compact vehicle display */
         .vehicle-display-compact {
             padding: 15px;
@@ -566,8 +574,9 @@
                     <h2>Welcome back, <span id="userName">User</span>!</h2>
                     <p>Manage your subscription and view your usage statistics below.</p>
                 </div>
-                <div class="welcome-vehicle-icon">
-                    🚗
+                <div id="welcomeVehicleContainer">
+                    <img id="welcomeVehicleImage" class="welcome-vehicle-image" src="" alt="Your Vehicle" style="display: none;">
+                    <div id="welcomeVehicleIcon" class="welcome-vehicle-icon">🚗</div>
                 </div>
             </div>
         </div>
@@ -589,6 +598,9 @@
                         📋 View Application Logs
                     </button>
                     <button class="action-btn action-btn-outline" onclick="window.location.href='/pricing.html'">Change Plan</button>
+                    <button class="action-btn action-btn-outline" id="savedChatsBtn" onclick="window.location.href='/saved-chats.html'">
+                        💾 Saved Chats
+                    </button>
                 </div>
             </div>
 
@@ -617,15 +629,6 @@
                 <div class="card-divider"></div>
                 <div class="card-subtitle">Quick Actions</div>
                 <div class="action-buttons">
-                    <button class="action-btn action-btn-primary" onclick="window.location.href='/chat'">
-                        💬 Start Chat
-                    </button>
-                    <button class="action-btn action-btn-outline" id="savedChatsBtn" onclick="window.location.href='/saved-chats.html'">
-                        💾 Saved Chats
-                    </button>
-                    <button class="action-btn action-btn-outline" onclick="window.location.href='/pricing.html'">
-                        💳 View Pricing
-                    </button>
                     <button class="action-btn action-btn-outline" id="adminBtn" style="display: none;" onclick="window.location.href='/admin.html'">
                         🔧 Admin Panel
                     </button>
@@ -640,11 +643,11 @@
                     <p class="vehicle-hint">Select your vehicle for personalized advice</p>
                 </div>
                 <div class="action-buttons">
-                    <button class="action-btn action-btn-primary" id="changeVehicleBtn">
-                        <span id="changeVehicleBtnText">Select Vehicle</span>
-                    </button>
-                    <button class="action-btn action-btn-outline" onclick="window.location.href='/chat'">
+                    <button class="action-btn action-btn-primary" onclick="window.location.href='/chat'">
                         💬 Start Chat
+                    </button>
+                    <button class="action-btn action-btn-outline" id="changeVehicleBtn">
+                        <span id="changeVehicleBtnText">Select Vehicle</span>
                     </button>
                 </div>
             </div>
@@ -1081,6 +1084,41 @@
 
             vehicleText.textContent = parts.join(' ');
             changeVehicleBtnText.textContent = 'Change Vehicle';
+
+            // Update welcome vehicle image
+            updateWelcomeVehicleImage(vehicle);
+        }
+
+        // Update welcome section vehicle image
+        function updateWelcomeVehicleImage(vehicle) {
+            const welcomeImage = document.getElementById('welcomeVehicleImage');
+            const welcomeIcon = document.getElementById('welcomeVehicleIcon');
+
+            if (!vehicle || (!vehicle.make && !vehicle.model)) {
+                // Show default icon
+                welcomeImage.style.display = 'none';
+                welcomeIcon.style.display = 'block';
+                return;
+            }
+
+            // Build search query for vehicle image
+            const searchQuery = `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`.trim();
+
+            // Use Unsplash Source for free car images
+            // Format: https://source.unsplash.com/120x80/?[searchQuery]
+            const imageUrl = `https://source.unsplash.com/120x80/?${encodeURIComponent(searchQuery + ' car')}`;
+
+            welcomeImage.src = imageUrl;
+            welcomeImage.onerror = function() {
+                // If image fails to load, show default icon
+                welcomeImage.style.display = 'none';
+                welcomeIcon.style.display = 'block';
+            };
+            welcomeImage.onload = function() {
+                // Image loaded successfully, hide icon and show image
+                welcomeIcon.style.display = 'none';
+                welcomeImage.style.display = 'block';
+            };
         }
 
         // Open modal
@@ -1175,6 +1213,17 @@
         // Initialize on load
         initDashboardVehicleSelectors();
         loadDashboardVehicle();
+
+        // Update welcome vehicle image on page load
+        const savedVehicle = localStorage.getItem('myMechanic_vehiclePreset');
+        if (savedVehicle) {
+            try {
+                const vehicle = JSON.parse(savedVehicle);
+                updateWelcomeVehicleImage(vehicle);
+            } catch (error) {
+                console.error('[Dashboard] Failed to load welcome vehicle image:', error);
+            }
+        }
     </script>
 
 </body>

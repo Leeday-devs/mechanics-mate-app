@@ -72,7 +72,16 @@
 
         body {
             font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            /* BMW M racing carbon fiber background */
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    #0d0d0d 0px,
+                    #0d0d0d 2px,
+                    #0a0a0a 2px,
+                    #0a0a0a 4px
+                ),
+                linear-gradient(135deg, #0f1419 0%, #16588E 50%, #1a1f2e 100%);
             color: #d4d4d8;
             line-height: 1.6;
             font-weight: 400;
@@ -84,16 +93,18 @@
             letter-spacing: -0.5px;
         }
 
-        /* Navigation */
+        /* Navigation - BMW M Racing Style */
         .nav {
-            background: rgba(15, 20, 25, 0.9);
+            background: linear-gradient(135deg, rgba(0, 138, 201, 0.15) 0%, rgba(22, 88, 142, 0.1) 100%);
             padding: 20px 0;
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
-            backdrop-filter: blur(16px) saturate(180%);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* BMW M tri-color racing stripe */
+            border-bottom: 3px solid transparent;
+            border-image: linear-gradient(90deg, #008AC9 0%, #2B115A 50%, #F11A22 100%) 1;
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 12px rgba(0, 138, 201, 0.2), inset 0 1px 0 rgba(129, 196, 255, 0.1);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -145,13 +156,15 @@
             bottom: 0;
             left: 0;
             width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #10b981, #d4af37);
+            height: 3px;
+            /* BMW M tri-color stripe */
+            background: linear-gradient(90deg, #008AC9 0%, #2B115A 50%, #F11A22 100%);
+            box-shadow: 0 2px 8px rgba(0, 138, 201, 0.4);
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .nav-links a:hover {
-            color: #d4af37;
+            color: #81C4FF;
         }
 
         .nav-links a:hover::after {
@@ -183,35 +196,56 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            /* BMW M racing gradient with metallic sheen */
+            background: linear-gradient(135deg, #008AC9 0%, #16588E 50%, #0077B3 100%);
             color: white;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 138, 201, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: 1.5px solid rgba(129, 196, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(129, 196, 255, 0.3) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary:hover::before {
+            opacity: 1;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #0077B3 0%, #16588E 50%, #008AC9 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 138, 201, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border-color: #81C4FF;
         }
 
         .btn-primary:active {
             transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 6px rgba(0, 138, 201, 0.5);
         }
 
         .btn-secondary {
             background: transparent;
-            color: #d4af37;
-            border: 1.5px solid rgba(212, 175, 55, 0.5);
-            backdrop-filter: blur(8px);
+            color: #81C4FF;
+            border: 2px solid rgba(129, 196, 255, 0.5);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 138, 201, 0.2), inset 0 1px 0 rgba(129, 196, 255, 0.1);
         }
 
         .btn-secondary:hover {
-            background: rgba(212, 175, 55, 0.1);
-            border-color: #d4af37;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+            background: rgba(0, 138, 201, 0.15);
+            border-color: #81C4FF;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 138, 201, 0.4), inset 0 1px 0 rgba(129, 196, 255, 0.2);
         }
 
         .btn-secondary:active {
@@ -219,7 +253,7 @@
         }
 
         .btn-secondary:focus-visible {
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 0 3px rgba(0, 138, 201, 0.3);
         }
 
         /* Hero Section */
@@ -255,7 +289,7 @@
             font-size: 72px;
             font-weight: 800;
             margin-bottom: 24px;
-            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
+            background: linear-gradient(135deg, #008AC9 0%, #81C4FF 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -292,13 +326,13 @@
         }
 
         .hero-attribution a {
-            color: #d4af37;
+            color: #81C4FF;
             text-decoration: none;
             transition: color 0.3s;
         }
 
         .hero-attribution a:hover {
-            color: #10b981;
+            color: #008AC9;
         }
 
         .trust-badges {
@@ -321,14 +355,14 @@
         }
 
         .badge:hover {
-            color: #d4af37;
+            color: #81C4FF;
             transform: translateY(-2px);
         }
 
         .badge svg {
             width: 20px;
             height: 20px;
-            fill: #d4af37;
+            fill: #81C4FF;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -348,7 +382,7 @@
             font-weight: 800;
             text-align: center;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
+            background: linear-gradient(135deg, #008AC9 0%, #81C4FF 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -384,22 +418,44 @@
         }
 
         .problem-card {
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            border: 1px solid rgba(241, 26, 34, 0.3);
+            /* Carbon fiber texture */
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(26, 31, 46, 0.7) 0px,
+                    rgba(26, 31, 46, 0.7) 2px,
+                    rgba(38, 45, 60, 0.7) 2px,
+                    rgba(38, 45, 60, 0.7) 4px
+                ),
+                linear-gradient(135deg, rgba(26, 31, 46, 0.7) 0%, rgba(38, 45, 60, 0.7) 100%);
         }
 
         .problem-card:hover {
-            border-color: rgba(239, 68, 68, 0.5);
-            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.1), 0 4px 6px -2px rgba(239, 68, 68, 0.05);
+            border-color: rgba(241, 26, 34, 0.6);
+            box-shadow: 0 10px 15px -3px rgba(241, 26, 34, 0.2), 0 4px 6px -2px rgba(241, 26, 34, 0.1);
             transform: translateY(-4px);
         }
 
         .solution-card {
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(0, 138, 201, 0.4);
+            /* Carbon fiber texture with BMW M blue accent */
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(26, 31, 46, 0.7) 0px,
+                    rgba(26, 31, 46, 0.7) 2px,
+                    rgba(38, 45, 60, 0.7) 2px,
+                    rgba(38, 45, 60, 0.7) 4px
+                ),
+                linear-gradient(135deg, rgba(0, 138, 201, 0.05) 0%, rgba(22, 88, 142, 0.1) 100%);
+            border-left: 4px solid transparent;
+            border-image: linear-gradient(180deg, #008AC9 0%, #2B115A 50%, #F11A22 100%) 1;
         }
 
         .solution-card:hover {
-            border-color: rgba(16, 185, 129, 0.5);
-            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05);
+            border-color: rgba(0, 138, 201, 0.6);
+            box-shadow: 0 10px 15px -3px rgba(0, 138, 201, 0.3), 0 4px 6px -2px rgba(0, 138, 201, 0.15);
             transform: translateY(-4px);
         }
 
@@ -440,7 +496,7 @@
 
         .solution-card .card-list li:before {
             content: "✓";
-            color: #10b981;
+            color: #008AC9;
         }
 
         /* Features Grid */
@@ -452,19 +508,46 @@
         }
 
         .feature-card {
-            background: linear-gradient(135deg, rgba(26, 31, 46, 0.6) 0%, rgba(38, 45, 60, 0.6) 100%);
-            border: 1px solid rgba(45, 55, 72, 0.5);
+            /* Carbon fiber texture with BMW M gradient */
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(26, 31, 46, 0.6) 0px,
+                    rgba(26, 31, 46, 0.6) 2px,
+                    rgba(38, 45, 60, 0.6) 2px,
+                    rgba(38, 45, 60, 0.6) 4px
+                ),
+                linear-gradient(135deg, rgba(0, 138, 201, 0.05) 0%, rgba(22, 88, 142, 0.08) 100%);
+            border: 1px solid rgba(129, 196, 255, 0.2);
             border-radius: 16px;
             padding: 30px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(12px) saturate(180%);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(129, 196, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #008AC9 0%, #2B115A 50%, #F11A22 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
         }
 
         .feature-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(16, 185, 129, 0.5);
-            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05), 0 0 0 1px rgba(16, 185, 129, 0.1);
+            border-color: rgba(0, 138, 201, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(0, 138, 201, 0.3), 0 4px 6px -2px rgba(0, 138, 201, 0.15), 0 0 0 1px rgba(129, 196, 255, 0.2);
         }
 
         .feature-icon {
@@ -503,7 +586,7 @@
         .step-number {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
+            background: linear-gradient(135deg, #008AC9 0%, #81C4FF 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -575,11 +658,20 @@
         }
 
         .pricing-card {
-            background: linear-gradient(135deg, rgba(26, 31, 46, 0.7) 0%, rgba(38, 45, 60, 0.7) 100%);
-            border: 1px solid rgba(45, 55, 72, 0.5);
+            /* Carbon fiber texture */
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(26, 31, 46, 0.7) 0px,
+                    rgba(26, 31, 46, 0.7) 2px,
+                    rgba(38, 45, 60, 0.7) 2px,
+                    rgba(38, 45, 60, 0.7) 4px
+                ),
+                linear-gradient(135deg, rgba(26, 31, 46, 0.7) 0%, rgba(38, 45, 60, 0.7) 100%);
+            border: 1px solid rgba(129, 196, 255, 0.3);
             border-radius: 16px;
             padding: 30px 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(129, 196, 255, 0.1);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             text-align: center;
@@ -588,18 +680,20 @@
 
         .pricing-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05);
-            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 10px 20px rgba(0, 138, 201, 0.3), inset 0 1px 0 rgba(129, 196, 255, 0.2);
+            border-color: rgba(0, 138, 201, 0.6);
         }
 
         .pricing-card.popular {
-            border: 2px solid rgba(16, 185, 129, 0.6);
-            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2), 0 4px 6px -2px rgba(16, 185, 129, 0.1), 0 0 0 1px rgba(212, 175, 55, 0.2);
+            border: 2px solid rgba(0, 138, 201, 0.6);
+            box-shadow: 0 10px 20px rgba(0, 138, 201, 0.4), 0 0 0 1px rgba(129, 196, 255, 0.3);
+            border-top: 3px solid transparent;
+            border-image: linear-gradient(90deg, #008AC9 0%, #2B115A 50%, #F11A22 100%) 1 0 0 0;
         }
 
         .pricing-card.popular:hover {
-            border-color: #10b981;
-            box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.2), 0 10px 10px -5px rgba(16, 185, 129, 0.1), 0 0 0 2px rgba(212, 175, 55, 0.3);
+            border-color: #008AC9;
+            box-shadow: 0 20px 30px rgba(0, 138, 201, 0.5), 0 0 0 2px rgba(129, 196, 255, 0.4);
         }
 
         .popular-badge {
@@ -607,7 +701,7 @@
             top: -15px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
+            background: linear-gradient(135deg, #008AC9 0%, #81C4FF 100%);
             color: white;
             padding: 8px 20px;
             border-radius: 20px;
@@ -629,7 +723,7 @@
         .plan-price {
             font-size: 48px;
             font-weight: 800;
-            background: linear-gradient(135deg, #10b981 0%, #d4af37 100%);
+            background: linear-gradient(135deg, #008AC9 0%, #81C4FF 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -666,7 +760,7 @@
 
         .plan-features li:before {
             content: "✓";
-            color: #10b981;
+            color: #008AC9;
             font-weight: bold;
             margin-right: 10px;
             font-size: 18px;
@@ -679,20 +773,31 @@
         }
 
         .faq-item {
-            background: linear-gradient(135deg, rgba(26, 31, 46, 0.6) 0%, rgba(38, 45, 60, 0.6) 100%);
-            border: 1px solid rgba(45, 55, 72, 0.5);
+            /* Carbon fiber texture */
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(26, 31, 46, 0.6) 0px,
+                    rgba(26, 31, 46, 0.6) 2px,
+                    rgba(38, 45, 60, 0.6) 2px,
+                    rgba(38, 45, 60, 0.6) 4px
+                ),
+                linear-gradient(135deg, rgba(26, 31, 46, 0.6) 0%, rgba(38, 45, 60, 0.6) 100%);
+            border: 1px solid rgba(129, 196, 255, 0.2);
+            border-left: 4px solid transparent;
+            border-image: linear-gradient(180deg, #008AC9 0%, #2B115A 50%, #F11A22 100%) 1 0 1 1;
             border-radius: 16px;
             padding: 30px;
             margin-bottom: 20px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(12px) saturate(180%);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(129, 196, 255, 0.05);
         }
 
         .faq-item:hover {
-            border-color: rgba(16, 185, 129, 0.5);
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1), 0 2px 4px -1px rgba(16, 185, 129, 0.06);
-            transform: translateX(4px);
+            border-color: rgba(0, 138, 201, 0.5);
+            box-shadow: 0 6px 12px rgba(0, 138, 201, 0.3), inset 0 1px 0 rgba(129, 196, 255, 0.1);
+            transform: translateX(6px);
         }
 
         .faq-question {
@@ -709,12 +814,23 @@
             line-height: 1.7;
         }
 
-        /* CTA Section */
+        /* CTA Section - BMW M Racing Style */
         .cta-section {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(0, 138, 201, 0.1) 0px,
+                    rgba(0, 138, 201, 0.1) 2px,
+                    rgba(22, 88, 142, 0.1) 2px,
+                    rgba(22, 88, 142, 0.1) 4px
+                ),
+                linear-gradient(135deg, #008AC9 0%, #16588E 50%, #0077B3 100%);
             padding: 80px 20px;
             text-align: center;
             margin-top: 80px;
+            border-top: 3px solid transparent;
+            border-image: linear-gradient(90deg, #008AC9 0%, #2B115A 50%, #F11A22 100%) 1;
+            box-shadow: 0 -4px 12px rgba(0, 138, 201, 0.3);
         }
 
         .cta-section h2 {
@@ -741,16 +857,36 @@
         }
 
         .btn-white {
-            background: white;
-            color: #10b981;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            color: #008AC9;
             font-weight: 700;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            border: 1.5px solid rgba(0, 138, 201, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-white::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 138, 201, 0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-white:hover::before {
+            opacity: 1;
         }
 
         .btn-white:hover {
-            background: #f9fafb;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 138, 201, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border-color: #008AC9;
         }
 
         .btn-white:active {
@@ -758,21 +894,22 @@
         }
 
         .btn-white:focus-visible {
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 3px rgba(0, 138, 201, 0.3);
         }
 
         .btn-outline-white {
             background: transparent;
             color: white;
-            border: 1.5px solid rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .btn-outline-white:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             border-color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .btn-outline-white:active {
@@ -783,12 +920,21 @@
             box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
         }
 
-        /* Footer */
+        /* Footer - BMW M Racing Style */
         .footer {
-            background: #0a0d11;
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    #0a0d11 0px,
+                    #0a0d11 2px,
+                    #08090c 2px,
+                    #08090c 4px
+                ),
+                linear-gradient(135deg, #0a0d11 0%, #0f1419 100%);
             padding: 40px 20px;
-            border-top: 1px solid rgba(16, 185, 129, 0.3);
-            box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.1);
+            border-top: 3px solid transparent;
+            border-image: linear-gradient(90deg, #008AC9 0%, #2B115A 50%, #F11A22 100%) 1;
+            box-shadow: 0 -4px 12px rgba(0, 138, 201, 0.2);
         }
 
         .footer-container {
@@ -824,7 +970,7 @@
         }
 
         .footer-links a:hover {
-            color: #d4af37;
+            color: #81C4FF;
             transform: translateX(4px);
         }
 

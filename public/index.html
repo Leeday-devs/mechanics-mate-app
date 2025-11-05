@@ -73,6 +73,12 @@
                         <circle cx="10" cy="10" r="1" fill="white"/>
                     </svg>
                 </button>
+                <button id="save-chat" class="icon-btn hidden" title="Save conversation">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4 L4 16 L16 16 L16 4 L13 4 L13 8 L7 8 L7 4 Z" stroke="white" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                        <rect x="7" y="4" width="6" height="4" fill="white"/>
+                    </svg>
+                </button>
                 <button id="export-chat" class="icon-btn" title="Export conversation">
                     <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M10 2 L10 13 M10 13 L6 9 M10 13 L14 9" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -213,6 +219,38 @@
             <div class="modal-footer">
                 <button class="modal-btn modal-btn-cancel" id="cancelModalBtn">Cancel</button>
                 <button class="modal-btn modal-btn-save" id="saveModalBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Conversation Modal -->
+    <div id="saveConversationModal" class="vehicle-modal hidden">
+        <div class="vehicle-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Save Conversation</h2>
+                <button class="modal-close" id="closeSaveModalBtn" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4 L16 16 M16 4 L4 16" stroke="#e0e0e0" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="save-conversation-form">
+                    <label for="conversationTitle" class="save-conversation-label">Conversation Title</label>
+                    <input
+                        type="text"
+                        id="conversationTitle"
+                        class="modal-vehicle-input"
+                        placeholder="e.g., Engine Light Troubleshooting"
+                        maxlength="100"
+                    />
+                    <p class="save-conversation-hint">Give your conversation a memorable name</p>
+                    <div id="saveConversationError" class="save-conversation-error hidden"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="cancelSaveModalBtn">Cancel</button>
+                <button class="modal-btn modal-btn-save" id="confirmSaveBtn">Save Conversation</button>
             </div>
         </div>
     </div>

@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendBtn = document.getElementById('send-btn');
     const clearBtn = document.getElementById('clear-chat');
     const exportBtn = document.getElementById('export-chat');
+    const saveChatBtn = document.getElementById('save-chat');
     const installAndroidBtn = document.getElementById('install-android');
     const installAppleBtn = document.getElementById('install-apple');
     const chatMessages = document.getElementById('chat-messages');
@@ -148,6 +149,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const toastMessage = document.getElementById('toastMessage');
 
     const modalCarYear = document.getElementById('modal-car-year');
+
+    // Save conversation modal elements
+    const saveConversationModal = document.getElementById('saveConversationModal');
+    const closeSaveModalBtn = document.getElementById('closeSaveModalBtn');
+    const cancelSaveModalBtn = document.getElementById('cancelSaveModalBtn');
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+    const conversationTitle = document.getElementById('conversationTitle');
+    const saveConversationError = document.getElementById('saveConversationError');
     const modalCarMake = document.getElementById('modal-car-make');
     const modalCarModel = document.getElementById('modal-car-model');
     const modalEngineType = document.getElementById('modal-engine-type');
@@ -244,6 +253,129 @@ document.addEventListener('DOMContentLoaded', function() {
             exportAsJSON();
         }
     });
+
+    // Save conversation button
+    if (saveChatBtn) {
+        saveChatBtn.addEventListener('click', function() {
+            if (conversationHistory.length === 0) {
+                alert('No conversation to save. Start chatting first!');
+                return;
+            }
+
+            // Open the save conversation modal
+            conversationTitle.value = '';
+            saveConversationError.classList.add('hidden');
+            saveConversationModal.classList.remove('hidden');
+            conversationTitle.focus();
+        });
+    }
+
+    // Save conversation modal - close button
+    if (closeSaveModalBtn) {
+        closeSaveModalBtn.addEventListener('click', function() {
+            saveConversationModal.classList.add('hidden');
+        });
+    }
+
+    // Save conversation modal - cancel button
+    if (cancelSaveModalBtn) {
+        cancelSaveModalBtn.addEventListener('click', function() {
+            saveConversationModal.classList.add('hidden');
+        });
+    }
+
+    // Save conversation modal - confirm button
+    if (confirmSaveBtn) {
+        confirmSaveBtn.addEventListener('click', async function() {
+            const title = conversationTitle.value.trim();
+
+            if (!title) {
+                saveConversationError.textContent = 'Please enter a title for your conversation';
+                saveConversationError.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                confirmSaveBtn.disabled = true;
+                confirmSaveBtn.textContent = 'Saving...';
+
+                const token = localStorage.getItem('authToken');
+                const currentVehicle = getCurrentVehicle();
+
+                const response = await fetch(`${window.location.origin}/api/conversations/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        vehicle: currentVehicle,
+                        messages: conversationHistory
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to save conversation');
+                }
+
+                // Success!
+                saveConversationModal.classList.add('hidden');
+                showToast('Conversation saved successfully!');
+
+            } catch (error) {
+                console.error('Error saving conversation:', error);
+                saveConversationError.textContent = error.message;
+                saveConversationError.classList.remove('hidden');
+            } finally {
+                confirmSaveBtn.disabled = false;
+                confirmSaveBtn.textContent = 'Save Conversation';
+            }
+        });
+    }
+
+    // Check subscription and show/hide save button
+    async function checkSavedChatsAccess() {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`${window.location.origin}/api/user/subscription`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                console.error('Failed to fetch subscription');
+                return;
+            }
+
+            const data = await response.json();
+            const subscription = data.subscription;
+
+            // Define saved chats limits (should match server-side pricing.js)
+            const SAVED_CHATS_LIMITS = {
+                trial: 0,
+                starter: 2,
+                professional: 5,
+                workshop: 10
+            };
+
+            const savedChatsLimit = SAVED_CHATS_LIMITS[subscription.plan_id] || 0;
+
+            // Show save button only if user has saved chats access
+            if (savedChatsLimit > 0 && saveChatBtn) {
+                saveChatBtn.classList.remove('hidden');
+            }
+
+        } catch (error) {
+            console.error('Error checking saved chats access:', error);
+        }
+    }
+
+    // Check saved chats access on page load
+    checkSavedChatsAccess();
 
     // Android install button
     if (installAndroidBtn) {
@@ -940,6 +1072,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Get current vehicle
+    function getCurrentVehicle() {
+        return {
+            year: currentVehicle.year || null,
+            make: currentVehicle.make || null,
+            model: currentVehicle.model || null,
+            engineType: currentVehicle.engineType || null,
+            engineSize: currentVehicle.engineSize || null
+        };
+    }
+
     // Load vehicle from localStorage and update display
     function loadVehicle() {
         try {
@@ -1061,6 +1204,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize modal selectors and load vehicle
     initModalVehicleSelectors();
     loadVehicle();
+
+    // Load saved conversation if present
+    function loadSavedConversationFromStorage() {
+        try {
+            const savedConv = localStorage.getItem('loadConversation');
+            if (savedConv) {
+                const conversation = JSON.parse(savedConv);
+
+                // Load the vehicle data
+                if (conversation.vehicle) {
+                    const vehicle = {
+                        year: conversation.vehicle.year || '',
+                        make: conversation.vehicle.make || '',
+                        model: conversation.vehicle.model || '',
+                        engineType: conversation.vehicle.engineType || '',
+                        engineSize: conversation.vehicle.engineSize || '',
+                        timestamp: Date.now()
+                    };
+
+                    localStorage.setItem('myMechanic_vehiclePreset', JSON.stringify(vehicle));
+                    currentVehicle = vehicle;
+                    updateVehicleBadge();
+                }
+
+                // Load the conversation history
+                if (conversation.messages && Array.isArray(conversation.messages)) {
+                    conversationHistory = conversation.messages;
+                    chatStarted = true;
+                    chatMessages.classList.add('chat-started');
+
+                    // Clear the welcome section and display the conversation
+                    chatMessages.innerHTML = '';
+
+                    // Add all messages to the chat
+                    conversation.messages.forEach(msg => {
+                        addMessageToChat(msg.role, msg.content, false);
+                    });
+                }
+
+                // Remove the saved conversation from localStorage
+                localStorage.removeItem('loadConversation');
+
+                console.log('[Saved Conversation] Loaded conversation:', conversation.title);
+                showToast(`Loaded: ${conversation.title}`);
+            }
+        } catch (error) {
+            console.error('[Saved Conversation] Error loading:', error);
+            localStorage.removeItem('loadConversation');
+        }
+    }
+
+    // Load saved conversation on page load
+    loadSavedConversationFromStorage();
 
     // ============================================
     // END VEHICLE MODAL FUNCTIONALITY

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="description" content="Your saved conversations - Car Mechanic">
+    <meta name="theme-color" content="#d32f2f">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+
+    <title>Saved Conversations - Car Mechanic</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        .saved-chats-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            min-height: calc(100vh - 60px);
+        }
+
+        .saved-chats-header {
+            margin-bottom: 2rem;
+        }
+
+        .saved-chats-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #d32f2f 0%, #ffb300 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .saved-chats-subtitle {
+            font-size: 1rem;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+
+        .saved-chats-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(211, 47, 47, 0.1);
+            border: 1px solid rgba(211, 47, 47, 0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+
+        .saved-chats-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .conversation-card {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .conversation-card:hover {
+            border-color: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .conversation-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+
+        .conversation-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 13px;
+            color: #999;
+            flex-wrap: wrap;
+        }
+
+        .conversation-vehicle {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .conversation-date {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .conversation-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .conversation-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: 1px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .conversation-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #666;
+        }
+
+        .conversation-btn.delete:hover {
+            background: rgba(211, 47, 47, 0.2);
+            border-color: #d32f2f;
+        }
+
+        .conversation-preview {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-subtitle {
+            font-size: 1rem;
+            color: #999;
+            margin-bottom: 2rem;
+        }
+
+        .empty-action {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .empty-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.5);
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <a href="/landing.html" class="logo-link" title="Back to Home">
+                <div class="logo">
+                    <svg class="logo-icon" width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 4 L18 8 L14 12 L10 8 Z" fill="#ffb300" stroke="white" stroke-width="0.5"/>
+                        <circle cx="12" cy="8" r="2.5" fill="none" stroke="white" stroke-width="0.5"/>
+                        <rect x="3" y="6.5" width="10" height="3" rx="1.5" fill="#ffb300" stroke="white" stroke-width="0.5"/>
+                        <circle cx="22" cy="22" r="6" fill="#ffb300"/>
+                        <circle cx="22" cy="22" r="3" fill="white"/>
+                    </svg>
+                    <span class="logo-text">Car Mechanic</span>
+                </div>
+            </a>
+            <div class="top-bar-actions">
+                <button id="dashboard-btn" class="icon-btn" title="Dashboard" onclick="window.location.href='/dashboard.html'">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 10C3 6.13 6.13 3 10 3C13.87 3 17 6.13 17 10C17 13.87 13.87 17 10 17C6.13 17 3 13.87 3 10Z" stroke="white" stroke-width="2" fill="none"/>
+                        <path d="M10 10L13 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="10" cy="10" r="1" fill="white"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Saved Chats Container -->
+        <div class="saved-chats-container">
+            <a href="/dashboard.html" class="back-btn">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back to Dashboard
+            </a>
+
+            <div class="saved-chats-header">
+                <h1 class="saved-chats-title">Saved Conversations</h1>
+                <p class="saved-chats-subtitle">Your saved chat history with the AI mechanic</p>
+                <div class="saved-chats-stats" id="savedChatsStats">
+                    <span id="statsText">Loading...</span>
+                </div>
+            </div>
+
+            <div id="savedChatsList" class="saved-chats-list">
+                <div class="loading-spinner">Loading your conversations...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="vehicle-toast hidden">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Check authentication
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            window.location.href = '/login.html';
+        }
+
+        // Elements
+        const savedChatsList = document.getElementById('savedChatsList');
+        const statsText = document.getElementById('statsText');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Saved chats limits (should match server-side)
+        const SAVED_CHATS_LIMITS = {
+            trial: 0,
+            starter: 2,
+            professional: 5,
+            workshop: 10
+        };
+
+        // Load saved conversations
+        async function loadSavedConversations() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/conversations/saved`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch conversations');
+                }
+
+                const data = await response.json();
+                const conversations = data.conversations || [];
+
+                // Get subscription info for stats
+                const subResponse = await fetch(`${window.location.origin}/api/user/subscription`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                let subscription = null;
+                if (subResponse.ok) {
+                    const subData = await subResponse.json();
+                    subscription = subData.subscription;
+                }
+
+                // Update stats
+                if (subscription) {
+                    const limit = SAVED_CHATS_LIMITS[subscription.plan_id] || 0;
+                    statsText.textContent = `${conversations.length} / ${limit} conversations saved`;
+                } else {
+                    statsText.textContent = `${conversations.length} conversations saved`;
+                }
+
+                // Display conversations
+                if (conversations.length === 0) {
+                    savedChatsList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">💬</div>
+                            <h2 class="empty-title">No saved conversations yet</h2>
+                            <p class="empty-subtitle">Start a chat and save your conversations for easy access later</p>
+                            <a href="/index.html" class="empty-action">Start Chatting</a>
+                        </div>
+                    `;
+                } else {
+                    savedChatsList.innerHTML = conversations.map(conv => {
+                        const messages = JSON.parse(conv.messages || '[]');
+                        const firstUserMessage = messages.find(m => m.role === 'user')?.content || 'No preview available';
+                        const date = new Date(conv.created_at).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+
+                        const vehicleParts = [];
+                        if (conv.vehicle_year) vehicleParts.push(conv.vehicle_year);
+                        if (conv.vehicle_make) vehicleParts.push(conv.vehicle_make);
+                        if (conv.vehicle_model) vehicleParts.push(conv.vehicle_model);
+                        const vehicleText = vehicleParts.join(' ') || 'No vehicle';
+
+                        return `
+                            <div class="conversation-card" data-id="${conv.id}">
+                                <div class="conversation-header">
+                                    <div>
+                                        <h3 class="conversation-title">${escapeHtml(conv.title)}</h3>
+                                        <div class="conversation-meta">
+                                            <span class="conversation-vehicle">🚗 ${escapeHtml(vehicleText)}</span>
+                                            <span class="conversation-date">📅 ${date}</span>
+                                        </div>
+                                    </div>
+                                    <div class="conversation-actions">
+                                        <button class="conversation-btn delete" onclick="deleteConversation('${conv.id}', event)" title="Delete">
+                                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M4 4 L16 16 M16 4 L4 16" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="conversation-preview">${escapeHtml(firstUserMessage)}</p>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Add click handlers to load conversations
+                    document.querySelectorAll('.conversation-card').forEach(card => {
+                        card.addEventListener('click', function(e) {
+                            // Don't load if clicking on delete button
+                            if (e.target.closest('.delete')) return;
+
+                            const convId = this.dataset.id;
+                            loadConversation(convId);
+                        });
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                savedChatsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <h2 class="empty-title">Failed to load conversations</h2>
+                        <p class="empty-subtitle">Please try refreshing the page</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load a specific conversation
+        async function loadConversation(conversationId) {
+            try {
+                const response = await fetch(`${window.location.origin}/api/conversations/${conversationId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load conversation');
+                }
+
+                const data = await response.json();
+                const conversation = data.conversation;
+
+                // Store conversation in localStorage for the chat page to load
+                localStorage.setItem('loadConversation', JSON.stringify({
+                    title: conversation.title,
+                    messages: JSON.parse(conversation.messages || '[]'),
+                    vehicle: {
+                        year: conversation.vehicle_year,
+                        make: conversation.vehicle_make,
+                        model: conversation.vehicle_model,
+                        engineType: conversation.vehicle_engine_type,
+                        engineSize: conversation.vehicle_engine_size
+                    }
+                }));
+
+                // Redirect to chat page
+                window.location.href = '/index.html';
+
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+                showToast('Failed to load conversation');
+            }
+        }
+
+        // Delete a conversation
+        async function deleteConversation(conversationId, event) {
+            event.stopPropagation();
+
+            if (!confirm('Are you sure you want to delete this conversation? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${window.location.origin}/api/conversations/${conversationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete conversation');
+                }
+
+                showToast('Conversation deleted');
+                loadSavedConversations(); // Reload the list
+
+            } catch (error) {
+                console.error('Error deleting conversation:', error);
+                showToast('Failed to delete conversation');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load conversations on page load
+        loadSavedConversations();
+    </script>
+</body>
+</html>

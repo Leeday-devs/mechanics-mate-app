@@ -580,6 +580,9 @@
                 <div class="plan-info" id="planInfo">
                     <p>Loading subscription details...</p>
                 </div>
+                <div class="saved-chats-info" id="savedChatsInfo" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+                    <p style="color: #b0b0b0; font-size: 14px; margin-bottom: 5px;"><strong>Saved Chats:</strong> <span id="savedChatsCount">0 / 0</span></p>
+                </div>
                 <div class="action-buttons">
                     <button class="action-btn action-btn-primary" id="managePlanBtn">Manage Subscription</button>
                     <button class="action-btn action-btn-outline" id="viewLogsBtn" style="display: none;" onclick="window.location.href='/admin.html'">
@@ -616,6 +619,9 @@
                 <div class="action-buttons">
                     <button class="action-btn action-btn-primary" onclick="window.location.href='/chat'">
                         💬 Start Chat
+                    </button>
+                    <button class="action-btn action-btn-outline" id="savedChatsBtn" onclick="window.location.href='/saved-chats.html'">
+                        💾 Saved Chats
                     </button>
                     <button class="action-btn action-btn-outline" onclick="window.location.href='/pricing.html'">
                         💳 View Pricing
@@ -727,15 +733,27 @@
         const viewLogsBtn = document.getElementById('viewLogsBtn');
 
         const PLAN_NAMES = {
+            basic: 'Basic',
             starter: 'Starter',
             professional: 'Professional',
-            workshop: 'Workshop'
+            unlimited: 'Unlimited',
+            workshop: 'Unlimited' // Legacy support
         };
 
         const PLAN_LIMITS = {
+            basic: 10,
             starter: 50,
             professional: 200,
-            workshop: -1
+            unlimited: -1,
+            workshop: -1 // Legacy support
+        };
+
+        const SAVED_CHATS_LIMITS = {
+            basic: 0,
+            starter: 2,
+            professional: 5,
+            unlimited: 10,
+            workshop: 10 // Legacy support
         };
 
         async function loadDashboard(retryCount = 0) {
@@ -839,6 +857,39 @@
                     <p><strong>Renews:</strong> ${endDate.toLocaleDateString('en-GB')}</p>
                     ${data.subscription.cancel_at_period_end ? '<p style="color: #f44336;"><strong>⚠ Cancels at period end</strong></p>' : ''}
                 `;
+
+                // Update saved chats count
+                const savedChatsLimit = SAVED_CHATS_LIMITS[planId] || 0;
+                const savedChatsCountElement = document.getElementById('savedChatsCount');
+
+                // Fetch saved chats count from API
+                try {
+                    const savedChatsResponse = await fetch('/api/conversations/saved', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (savedChatsResponse.ok) {
+                        const savedChatsData = await savedChatsResponse.json();
+                        const savedCount = savedChatsData.conversations?.length || 0;
+                        savedChatsCountElement.textContent = `${savedCount} / ${savedChatsLimit}`;
+                    } else {
+                        // API endpoint doesn't exist yet, show 0
+                        savedChatsCountElement.textContent = `0 / ${savedChatsLimit}`;
+                    }
+                } catch (error) {
+                    console.log('[Dashboard] Saved chats API not available yet:', error);
+                    savedChatsCountElement.textContent = `0 / ${savedChatsLimit}`;
+                }
+
+                // Hide saved chats button if limit is 0
+                if (savedChatsLimit === 0) {
+                    const savedChatsBtn = document.getElementById('savedChatsBtn');
+                    if (savedChatsBtn) {
+                        savedChatsBtn.style.display = 'none';
+                    }
+                }
 
                 // Update usage stats
                 const usage = data.usage || { message_count: 0 };

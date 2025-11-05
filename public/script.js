@@ -536,6 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Disable input while processing
         userInput.disabled = true;
         sendBtn.disabled = true;
+        sendBtn.classList.add('loading');
 
         // Add user message to chat (show original message without car prefix)
         addMessageToChat('user', message);
@@ -683,7 +684,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Re-enable input
             userInput.disabled = false;
-            // Only enable send button if there's text in input
+            // Remove loading class and re-enable button based on input
+            sendBtn.classList.remove('loading');
             sendBtn.disabled = !userInput.value.trim();
             userInput.focus();
         }
@@ -818,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function() {
         typeNextChar();
     }
 
-    // Add typing indicator
+    // Add typing indicator with rotating messages
     function showTypingIndicator() {
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message assistant typing-message';
@@ -826,13 +828,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content typing-indicator-content';
-        contentDiv.innerHTML = `
-            <div class="typing-dots">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
-        `;
+
+        const messages = [
+            "Analyzing your vehicle...",
+            "Checking diagnostic codes...",
+            "Consulting technical data...",
+            "Reviewing repair procedures...",
+            "Compiling recommendations..."
+        ];
+
+        let messageIndex = 0;
+        contentDiv.innerHTML = `<div class="typing-text">${messages[messageIndex]}</div>`;
+
+        // Rotate through messages
+        const intervalId = setInterval(() => {
+            messageIndex = (messageIndex + 1) % messages.length;
+            const textElement = contentDiv.querySelector('.typing-text');
+            if (textElement) {
+                textElement.textContent = messages[messageIndex];
+            }
+        }, 2000);
+
+        // Store interval ID so we can clear it when hiding
+        typingDiv.dataset.intervalId = intervalId;
 
         typingDiv.appendChild(contentDiv);
         chatMessages.appendChild(typingDiv);
@@ -847,6 +865,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function hideTypingIndicator() {
         const indicator = document.getElementById('typing-indicator');
         if (indicator) {
+            // Clear the interval
+            const intervalId = indicator.dataset.intervalId;
+            if (intervalId) {
+                clearInterval(parseInt(intervalId));
+            }
             indicator.remove();
         }
     }

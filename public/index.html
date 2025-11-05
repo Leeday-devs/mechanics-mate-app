@@ -46,11 +46,6 @@
                     <span class="vehicle-icon-small">🚗</span>
                     <span class="vehicle-name" id="vehicleName">No vehicle</span>
                 </div>
-                <button id="change-vehicle-btn" class="icon-btn vehicle-change-btn" title="Change vehicle">
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 8L17 10L15 12M5 12L3 10L5 8M10 4V16" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
             </div>
             <div class="top-bar-actions">
                 <button id="install-android" class="download-btn hidden" title="Get it on Google Play">
@@ -110,6 +105,7 @@
                     </div>
                     <h1 class="welcome-title">Welcome to Car Mechanic</h1>
                     <p class="welcome-subtitle">Your fast automotive Assistant</p>
+                    <p class="powered-by">Powered by <a href="https://leeday.uk" target="_blank" rel="noopener noreferrer" class="powered-by-link">LeeDay.uk</a></p>
 
                     <div class="suggestions">
                         <button class="suggestion-card" data-prompt="My engine management light is on, what should I do?">
@@ -134,17 +130,17 @@
 
             <!-- Input Area -->
             <div class="input-wrapper">
-                <!-- Loading Indicator (in bottom bar) -->
-                <div id="loading" class="loading-indicator hidden">
-                    <div class="loading-content">
-                        <div class="car-animation">
-                            <img src="loading-car.gif" alt="Loading..." class="car-icon gif-loading">
-                            <div class="road-line"></div>
-                        </div>
-                        <div class="loading-text">Getting an answer...</div>
-                    </div>
-                </div>
                 <div class="input-container">
+                    <!-- Loading Indicator (overlays input) -->
+                    <div id="loading" class="loading-indicator-overlay hidden">
+                        <div class="loading-overlay-content">
+                            <div class="car-animation">
+                                <img src="loading-car.gif" alt="Loading..." class="car-icon gif-loading">
+                                <div class="road-line"></div>
+                            </div>
+                            <div class="loading-text">Getting an answer...</div>
+                        </div>
+                    </div>
                     <textarea
                         id="user-input"
                         placeholder="Ask me anything about your car..."

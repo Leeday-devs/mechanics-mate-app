@@ -167,6 +167,7 @@ const authRoutes = require('./src/routes/auth');
 const subscriptionRoutes = require('./src/routes/subscriptions');
 const adminRoutes = require('./src/routes/admin');
 const logsRoutes = require('./src/routes/logs');
+const conversationsRoutes = require('./src/routes/conversations');
 const { authenticateToken, requireSubscription } = require('./src/middleware/auth');
 const { requestLoggingMiddleware, errorLoggingMiddleware, securityLoggingMiddleware } = require('./src/middleware/logger');
 const { checkQuota, incrementQuota, logMessage } = require('./src/utils/quota');
@@ -269,6 +270,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/logs', logsRoutes); // Comprehensive logging endpoints
+app.use('/api/conversations', authenticateToken, requireSubscription, conversationsRoutes); // Saved conversations
 
 // Serve static files AFTER route handlers to prevent index.html from overriding root
 app.use(express.static('./public', { index: false })); // Serve from public directory

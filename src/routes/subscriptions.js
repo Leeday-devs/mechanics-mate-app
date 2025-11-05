@@ -2,7 +2,7 @@ const express = require('express');
 const stripe = require('../lib/stripe');
 const { supabaseAdmin } = require('../lib/supabase');
 const { authenticateToken } = require('../middleware/auth');
-const { PLAN_PRICES } = require('../lib/pricing');
+const { PLAN_PRICES, TRIAL_MAX_USES } = require('../lib/pricing');
 const logger = require('../lib/logger');
 
 const router = express.Router();
@@ -56,6 +56,34 @@ router.post('/create-checkout', authenticateToken, async (req, res) => {
 
         if (!planId || !PLAN_PRICES[planId]) {
             return res.status(400).json({ error: 'Invalid plan selected' });
+        }
+
+        // Check trial plan usage limit (max 2 uses per email)
+        if (planId === 'trial') {
+            // Count how many times this user has subscribed to trial plan
+            const { count: trialCount, error: countError } = await supabaseAdmin
+                .from('subscriptions')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', userId)
+                .eq('plan_id', 'trial');
+
+            if (countError) {
+                logger.error('[Subscriptions] Error checking trial usage:', countError);
+                return res.status(500).json({ error: 'Failed to verify trial eligibility' });
+            }
+
+            if (trialCount >= TRIAL_MAX_USES) {
+                logger.warn(`[Subscriptions] User ${userId} (${userEmail}) exceeded trial limit (${trialCount}/${TRIAL_MAX_USES})`);
+                return res.status(403).json({
+                    error: 'Trial plan limit reached',
+                    message: `You have already used the trial plan ${trialCount} time${trialCount > 1 ? 's' : ''}. Please select a different plan.`,
+                    trialUsed: trialCount,
+                    trialLimit: TRIAL_MAX_USES,
+                    needsUpgrade: true
+                });
+            }
+
+            logger.info(`[Subscriptions] User ${userId} trial usage: ${trialCount}/${TRIAL_MAX_USES}`);
         }
 
         // Check if user already has active subscription

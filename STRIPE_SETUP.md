@@ -1,18 +1,20 @@
-# Stripe Setup Guide - New Basic Plan
+# Stripe Setup Guide - New Trial Plan
 
-## Create the £1.99 Basic Plan in Stripe
+## Create the £1.99 Trial Plan in Stripe
+
+⚠️ **IMPORTANT**: The Trial plan is limited to **2 uses per email address**. After 2 trial subscriptions, users must select a different plan.
 
 ### Step 1: Log into Stripe Dashboard
 1. Go to https://dashboard.stripe.com
 2. Make sure you're in **TEST MODE** first (toggle in top right)
 
-### Step 2: Create the Basic Product
+### Step 2: Create the Trial Product
 
 1. Navigate to **Products** in the left sidebar
 2. Click **+ Add product**
 3. Fill in the details:
-   - **Name**: `Basic Plan`
-   - **Description**: `Essential for basic car queries - 10 credits per month, no saved chats`
+   - **Name**: `Trial Plan`
+   - **Description**: `Try us out - 10 credits per month, no saved chats (max 2 uses per customer)`
    - **Pricing model**: Choose **Standard pricing**
    - **Price**: `1.99`
    - **Billing period**: `Monthly`
@@ -22,7 +24,7 @@
 ### Step 3: Get the Price ID
 
 After creating the product, you'll see it in your Products list:
-1. Click on the **Basic Plan** product
+1. Click on the **Trial Plan** product
 2. In the **Pricing** section, you'll see the price you just created
 3. Copy the **Price ID** - it will look like: `price_xxxxxxxxxxxxx`
 
@@ -31,15 +33,15 @@ After creating the product, you'll see it in your Products list:
 Add the price ID to your `.env` file:
 
 ```bash
-# New Basic Plan (£1.99/mo)
-STRIPE_PRICE_BASIC=price_xxxxxxxxxxxxx
+# Trial Plan (£1.99/mo) - Limited to 2 uses per email
+STRIPE_PRICE_TRIAL=price_xxxxxxxxxxxxx
 ```
 
 **Full pricing environment variables should now be:**
 
 ```bash
 # Stripe Price IDs
-STRIPE_PRICE_BASIC=price_xxxxxxxxxxxxx          # £1.99 - 10 credits, 0 saved chats
+STRIPE_PRICE_TRIAL=price_xxxxxxxxxxxxx          # £1.99 - 10 credits, 0 saved chats (max 2 uses per email)
 STRIPE_PRICE_STARTER=price_xxxxxxxxxxxxx        # £4.99 - 50 credits, 2 saved chats
 STRIPE_PRICE_PROFESSIONAL=price_xxxxxxxxxxxxx   # £14.99 - 200 credits, 5 saved chats
 STRIPE_PRICE_WORKSHOP=price_xxxxxxxxxxxxx       # £39.99 - Unlimited credits, 10 saved chats
@@ -88,18 +90,18 @@ After adding the environment variable:
 
 ## Current Pricing Structure
 
-| Plan | Price | Credits | Saved Chats |
-|------|-------|---------|-------------|
-| **Basic** (NEW) | £1.99/mo | 10 | 0 |
-| Starter | £4.99/mo | 50 | 2 |
-| Professional | £14.99/mo | 200 | 5 |
-| Workshop | £39.99/mo | Unlimited | 10 |
+| Plan | Price | Credits | Saved Chats | Notes |
+|------|-------|---------|-------------|-------|
+| **Trial** (NEW) | £1.99/mo | 10 | 0 | Max 2 uses per email |
+| Starter | £4.99/mo | 50 | 2 | - |
+| Professional | £14.99/mo | 200 | 5 | - |
+| Workshop | £39.99/mo | Unlimited | 10 | - |
 
 ---
 
 ## Troubleshooting
 
-**Issue**: "Missing STRIPE_PRICE_BASIC" warning on server start
+**Issue**: "Missing STRIPE_PRICE_TRIAL" warning on server start
 
 **Solution**: Make sure you've:
 1. Created the product in Stripe
@@ -107,22 +109,30 @@ After adding the environment variable:
 3. Added it to `.env` file
 4. Restarted the server
 
-**Issue**: Customers can't see the Basic plan on pricing page
+**Issue**: Customers can't see the Trial plan on pricing page
 
 **Solution**:
 1. Check that the pricing page is reading from the correct configuration
 2. Verify the price ID is correct in Stripe
 3. Clear browser cache and reload
 
+**Issue**: User gets "Trial plan limit reached" error
+
+**Solution**: This is expected behavior! The trial plan is limited to 2 uses per email address. The user should:
+1. Select a different plan (Starter, Professional, or Workshop)
+2. Or use a different email address (if legitimate use case)
+
 ---
 
 ## Next Steps After Adding Price ID
 
-1. ✅ Update `.env` with `STRIPE_PRICE_BASIC`
+1. ✅ Update `.env` with `STRIPE_PRICE_TRIAL`
 2. ✅ Restart server
 3. ✅ Apply database migration (009_create_saved_conversations_table.sql)
 4. ✅ Test the complete flow:
-   - Sign up with Basic plan
+   - Sign up with Trial plan
    - Check dashboard shows 0 / 0 saved chats
    - Verify Saved Chats button is hidden
+   - Try to subscribe to Trial again (after canceling) - should work
+   - Try a 3rd time - should be blocked with error message
    - Test upgrading to Starter to enable saved chats

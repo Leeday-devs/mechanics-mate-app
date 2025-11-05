@@ -733,21 +733,21 @@
         const viewLogsBtn = document.getElementById('viewLogsBtn');
 
         const PLAN_NAMES = {
-            basic: 'Basic',           // NEW tier
+            trial: 'Trial',           // TRIAL tier (max 2 uses per email)
             starter: 'Starter',       // EXISTING tier
             professional: 'Professional', // EXISTING tier
             workshop: 'Workshop'      // EXISTING tier
         };
 
         const PLAN_LIMITS = {
-            basic: 10,                // NEW tier - 10 credits
+            trial: 10,                // TRIAL tier - 10 credits (max 2 uses per email)
             starter: 50,              // EXISTING tier - unchanged
             professional: 200,        // EXISTING tier - unchanged
             workshop: -1              // EXISTING tier - unlimited (unchanged)
         };
 
         const SAVED_CHATS_LIMITS = {
-            basic: 0,                 // NEW tier - no saved chats
+            trial: 0,                 // TRIAL tier - no saved chats
             starter: 2,               // EXISTING tier - add 2 saved chats
             professional: 5,          // EXISTING tier - add 5 saved chats
             workshop: 10              // EXISTING tier - add 10 saved chats

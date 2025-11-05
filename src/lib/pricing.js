@@ -3,7 +3,7 @@
 
 // Stripe Price IDs (from environment variables)
 const PLAN_PRICES = {
-    basic: process.env.STRIPE_PRICE_BASIC,              // NEW tier
+    trial: process.env.STRIPE_PRICE_TRIAL,              // TRIAL tier (£1.99) - max 2 uses per email
     starter: process.env.STRIPE_PRICE_STARTER,          // EXISTING tier
     professional: process.env.STRIPE_PRICE_PROFESSIONAL, // EXISTING tier
     workshop: process.env.STRIPE_PRICE_WORKSHOP         // EXISTING tier
@@ -11,7 +11,7 @@ const PLAN_PRICES = {
 
 // Monthly Recurring Revenue (MRR) for analytics - in GBP
 const PLAN_MRR = {
-    basic: 1.99,          // NEW tier
+    trial: 1.99,          // TRIAL tier - limited to 2 uses per email
     starter: 4.99,        // EXISTING tier
     professional: 14.99,  // EXISTING tier
     workshop: 39.99       // EXISTING tier
@@ -19,7 +19,7 @@ const PLAN_MRR = {
 
 // Message limits per plan (credits)
 const PLAN_LIMITS = {
-    basic: 10,            // NEW tier - 10 credits
+    trial: 10,            // TRIAL tier - 10 credits (max 2 uses per email)
     starter: 50,          // EXISTING tier - unchanged
     professional: 200,    // EXISTING tier - unchanged
     workshop: -1          // EXISTING tier - unlimited (unchanged)
@@ -27,7 +27,7 @@ const PLAN_LIMITS = {
 
 // Saved conversations limits per plan
 const SAVED_CHATS_LIMITS = {
-    basic: 0,             // NEW tier - no saved chats
+    trial: 0,             // TRIAL tier - no saved chats
     starter: 2,           // EXISTING tier - add 2 saved chats
     professional: 5,      // EXISTING tier - add 5 saved chats
     workshop: 10          // EXISTING tier - add 10 saved chats
@@ -35,17 +35,20 @@ const SAVED_CHATS_LIMITS = {
 
 // Plan descriptions for UI display
 const PLAN_DESCRIPTIONS = {
-    basic: 'Essential for basic car queries',     // NEW tier
-    starter: 'Perfect for car owners',            // EXISTING tier
-    professional: 'For enthusiasts and mechanics', // EXISTING tier
-    workshop: 'For professional workshops'        // EXISTING tier
+    trial: 'Try us out - 10 credits (max 2 uses)',  // TRIAL tier
+    starter: 'Perfect for car owners',              // EXISTING tier
+    professional: 'For enthusiasts and mechanics',  // EXISTING tier
+    workshop: 'For professional workshops'          // EXISTING tier
 };
+
+// Maximum number of times a user can subscribe to trial plan
+const TRIAL_MAX_USES = 2;
 
 // Validate pricing configuration on module load
 function validatePricingConfig() {
     const missingPrices = [];
 
-    if (!PLAN_PRICES.basic) missingPrices.push('STRIPE_PRICE_BASIC');
+    if (!PLAN_PRICES.trial) missingPrices.push('STRIPE_PRICE_TRIAL');
     if (!PLAN_PRICES.starter) missingPrices.push('STRIPE_PRICE_STARTER');
     if (!PLAN_PRICES.professional) missingPrices.push('STRIPE_PRICE_PROFESSIONAL');
     if (!PLAN_PRICES.workshop) missingPrices.push('STRIPE_PRICE_WORKSHOP');
@@ -67,5 +70,6 @@ module.exports = {
     PLAN_LIMITS,
     SAVED_CHATS_LIMITS,
     PLAN_DESCRIPTIONS,
+    TRIAL_MAX_USES,
     validatePricingConfig
 };

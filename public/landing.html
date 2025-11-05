@@ -72,16 +72,28 @@
 
         body {
             font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            /* BMW M racing carbon fiber background */
+            /* Enhanced BMW M racing carbon fiber background with realistic weave */
             background:
+                /* Diagonal carbon fiber weave pattern */
                 repeating-linear-gradient(
                     45deg,
-                    #0d0d0d 0px,
-                    #0d0d0d 2px,
-                    #0a0a0a 2px,
-                    #0a0a0a 4px
+                    #1a1a1a 0px,
+                    #1a1a1a 3px,
+                    #0f0f0f 3px,
+                    #0f0f0f 6px
                 ),
-                linear-gradient(135deg, #0f1419 0%, #16588E 50%, #1a1f2e 100%);
+                repeating-linear-gradient(
+                    -45deg,
+                    #141414 0px,
+                    #141414 3px,
+                    #0a0a0a 3px,
+                    #0a0a0a 6px
+                ),
+                /* BMW M blue accent gradient overlay */
+                linear-gradient(135deg, rgba(0, 138, 201, 0.03) 0%, rgba(22, 88, 142, 0.05) 50%, rgba(0, 119, 179, 0.02) 100%),
+                /* Base dark color */
+                #0d0d0d;
+            background-blend-mode: normal, normal, overlay, normal;
             color: #d4d4d8;
             line-height: 1.6;
             font-weight: 400;

@@ -733,27 +733,24 @@
         const viewLogsBtn = document.getElementById('viewLogsBtn');
 
         const PLAN_NAMES = {
-            basic: 'Basic',
-            starter: 'Starter',
-            professional: 'Professional',
-            unlimited: 'Unlimited',
-            workshop: 'Unlimited' // Legacy support
+            basic: 'Basic',           // NEW tier
+            starter: 'Starter',       // EXISTING tier
+            professional: 'Professional', // EXISTING tier
+            workshop: 'Workshop'      // EXISTING tier
         };
 
         const PLAN_LIMITS = {
-            basic: 10,
-            starter: 50,
-            professional: 200,
-            unlimited: -1,
-            workshop: -1 // Legacy support
+            basic: 10,                // NEW tier - 10 credits
+            starter: 50,              // EXISTING tier - unchanged
+            professional: 200,        // EXISTING tier - unchanged
+            workshop: -1              // EXISTING tier - unlimited (unchanged)
         };
 
         const SAVED_CHATS_LIMITS = {
-            basic: 0,
-            starter: 2,
-            professional: 5,
-            unlimited: 10,
-            workshop: 10 // Legacy support
+            basic: 0,                 // NEW tier - no saved chats
+            starter: 2,               // EXISTING tier - add 2 saved chats
+            professional: 5,          // EXISTING tier - add 5 saved chats
+            workshop: 10              // EXISTING tier - add 10 saved chats
         };
 
         async function loadDashboard(retryCount = 0) {
